@@ -27,17 +27,12 @@ USER root
 WORKDIR /root
 RUN \
     mkdir result &&\
-    cd result &&\
-    mkdir tmp &&\
-    mkdir methodInfo &&\
-    mkdir functionInfo &&\
-    mkdir referenceInfo
+    cd result
 
-# Set project core
-COPY core /root/workDir/core/
-
+# Set project
+COPY ASTParser /root/workDir/ASTParser/
 ENV LC_ALL C.UTF-8
 ENV LANG C.UTF-8
 
-WORKDIR /root/workDir/core
-# CMD ["python3","main.py"]
+WORKDIR /root/workDir/ASTParser
+CMD ["python3","parser_main.py"]

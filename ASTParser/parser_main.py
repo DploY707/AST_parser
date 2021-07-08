@@ -9,7 +9,7 @@ from androguard.misc import AnalyzeAPK
 
 import networkx as nx
 
-targetPath = '/root/workDir/data/okhttp-3.1.0_dex.jar'
+targetPath = 'data/okhttp-3.1.0_dex.jar'
 resultPath = './out.pickle'
 
 BLOCKSTAT = 'BlockStatement'
@@ -112,10 +112,6 @@ def bfs_for_normalStat_ast(contents) :
             print("DP : ", contents)
     else:
         print("DP : ", contents)
-
-def save_ast():
-    with gzip.open(resultPath,'wb') as f:
-        pickle.dump(tot, f)
 
 if __name__ == '__main__' :
     a, d, dx = AnalyzeAPK(targetPath)
