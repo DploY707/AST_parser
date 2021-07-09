@@ -11,8 +11,11 @@ from core.statements import JumpStatement
 from core.statements import DoStatement
 from core.statements import WhileStatement
 from core.statements import TryStatement
+from core.statements import IfStatement
 from core.statements import SwitchStatement
 from core.statements import BlockStatement
+
+from core.actions import Action
 
 from core.utils import Color
 from core.utils import set_string_colored
@@ -46,6 +49,7 @@ actionList = [
         'TypeName',
         'Unary',
         'Dummy',
+        'ClassInstanceCreation' # TODO: Analyze this case
         ]
 
 
@@ -83,29 +87,15 @@ class ASTParser():
 
         pprint(ast)
 
+        if ast is None:
+            return
+
         if ast[0] in stmtList:
             self.visit_statments(ast)
         elif ast[0] in actionList:
             self.visit_actions(ast)
         else:
             pass
-        '''
-        if type(ast) == type(list()):
-            for subTree in ast:
-                if subTree[0] in stmtList:
-                    self.visit_statments(subTree)
-                elif subTree[0] in actionList:
-                    self.visit_actions(subTree)
-                else:
-                    pass
-        else:
-            if ast in stmtList:
-                self.visit_statments(subTree)
-            elif ast in actionList:
-                self.visit_actions(subTree)
-            else:
-                pass
-        '''
 
     def visit_statments(self, astBlock):
         print(set_string_colored('DP Check : function: visit_statments is invoked', Color.GREEN.value))
@@ -212,13 +202,98 @@ class ASTParser():
                 self.parsedNodes.append(stmtNode)
 
         elif astBlock[0] == 'JumpStatement':
-            pass
+            stmt = copy_instance(astBlock)
+
+            js = JumpStatement(stmt)
+            stmtNode = ASTNode(js, len(self.parsedNodes))
+
+            self.parsedNodes.append(stmtNode)
 
         elif astBlock[0] == 'DoStatement':
-            pass
+            stmt = copy_instance(astBlock)
+
+            doStmtNodeIndex = len(self.parsedNodes)
+
+            # Branch for control expression
+            if type(astBlock[2]) == type(list()):
+                stmt[2] = 'extended'
+
+                ds = DoStatement(stmt)
+                stmtNode = ASTNode(ds, doStmtNodeIndex)
+
+                self.parsedNodes.append(stmtNode)
+
+                if type(astBlock[2][0]) == type(list()):
+                    for subTree in astBlock[2]:
+                        self.visit_tree(subTree)
+                else :
+                    self.visit_tree(astBlock[2])
+            else:
+                ds = DoStatement(stmt)
+                stmtNode = ASTNode(ds, doStmtNodeIndex)
+
+                self.parsedNodes.append(stmtNode)
+
+            # Branch for scopes(body) expression
+            if type(astBlock[3]) == type(list()):
+                stmt[3] = 'extended'
+
+                if 'extended' in stmt:
+                    self.parsedNodes[doStmtNodeIndex].data.update_doStatement(stmt)
+                else:
+                    ds = DoStatement(stmt)
+                    stmtNode = ASTNode(ds, doStmtNodeIndex)
+
+                    self.parsedNodes.append(stmtNode)
+
+                if type(astBlock[3][0]) == type(list()):
+                    for subTree in astBlock[3]:
+                        self.visit_tree(subTree)
+                else :
+                    self.visit_tree(astBlock[3])
 
         elif astBlock[0] == 'WhileStatement':
-            pass
+            stmt = copy_instance(astBlock)
+
+            whileStmtNodeIndex = len(self.parsedNodes)
+
+            # Branch for control expression
+            if type(astBlock[2]) == type(list()):
+                stmt[2] = 'extended'
+
+                ws = WhileStatement(stmt)
+                stmtNode = ASTNode(ws, whileStmtNodeIndex)
+
+                self.parsedNodes.append(stmtNode)
+
+                if type(astBlock[2][0]) == type(list()):
+                    for subTree in astBlock[2]:
+                        self.visit_tree(subTree)
+                else :
+                    self.visit_tree(astBlock[2])
+            else:
+                ws = WhileStatement(stmt)
+                stmtNode = ASTNode(ws, whileStmtNodeIndex)
+
+                self.parsedNodes.append(stmtNode)
+
+            # Branch for scopes(body) expression
+            if type(astBlock[3]) == type(list()):
+                stmt[3] = 'extended'
+
+                if 'extended' in stmt:
+                    self.parsedNodes[whileStmtNodeIndex].data.update_whileStatement(stmt)
+                else:
+                    ws = WhileStatement(stmt)
+                    stmtNode = ASTNode(ws, whileStmtNodeIndex)
+
+                    self.parsedNodes.append(stmtNode)
+
+                if type(astBlock[3][0]) == type(list()):
+                    for subTree in astBlock[3]:
+                        self.visit_tree(subTree)
+                else :
+                    self.visit_tree(astBlock[3])
 
         elif astBlock[0] == 'TryStatement':
             pass
@@ -226,12 +301,59 @@ class ASTParser():
         elif astBlock[0] == 'IfStatement':
             stmt = copy_instance(astBlock)
 
+            ifStmtNodeIndex = len(self.parsedNodes)
+
+            # Branch for control expression
+            if type(astBlock[2]) == type(list()):
+                stmt[2] = 'extended'
+
+                ifs = IfStatement(stmt)
+                stmtNode = ASTNode(ifs, ifStmtNodeIndex)
+
+                self.parsedNodes.append(stmtNode)
+
+                if type(astBlock[2][0]) == type(list()):
+                    for subTree in astBlock[2]:
+                        self.visit_tree(subTree)
+                else :
+                    self.visit_tree(astBlock[2])
+            else:
+                ifs = IfStatement(stmt)
+                stmtNode = ASTNode(ifs, ifStmtNodeIndex)
+
+                self.parsedNodes.append(stmtNode)
+
+            # Branch for scopes(body) expression
+            if type(astBlock[3]) == type(list()):
+                stmt[3] = 'extended'
+
+                if 'extended' in stmt:
+                    self.parsedNodes[ifStmtNodeIndex].data.update_ifStatement(stmt)
+                else:
+                    ifs = IfStatement(stmt)
+                    stmtNode = ASTNode(ifs, ifStmtNodeIndex)
+
+                    self.parsedNodes.append(stmtNode)
+
+                if type(astBlock[3][0]) == type(list()):
+                    for subTree in astBlock[3]:
+                        self.visit_tree(subTree)
+                else :
+                    self.visit_tree(astBlock[3])
+
         elif astBlock[0] == 'SwitchStatement':
             pass
 
     def visit_actions(self, astBlock):
         print(set_string_colored('DP Check : function: visit_actions is invoked', Color.GREEN.value))
         pprint(astBlock)
+
+        tmp_instance = copy_instance(astBlock)
+
+        tmp_action = Action(tmp_instance)
+
+        actionNode = ASTNode(tmp_action, len(self.parsedNodes))
+        self.parsedNodes.append(actionNode)
 
         if astBlock[0] == 'ArrayAccess':
             pass
@@ -285,7 +407,7 @@ class ASTParser():
 
 # Class for parsed node of AST
 class ASTNode():
-    def __init__(self, stmt, index):
-        self.stmt = stmt
+    def __init__(self, data, index):
+        self.data = data
         self.index = index
         
