@@ -2,8 +2,8 @@ class Statement():
     def __init__(self, stmtInfo):
         self.stmtInfo = stmtInfo
 
-    def __repr__():
-        print(self.stmtInfo)
+    def __repr__(self):
+        return str(self.stmtInfo)
 
 class ExpressionStatement(Statement):
     def __init__(self, stmtInfo):
@@ -30,8 +30,9 @@ class JumpStatement(Statement):
     def __init__(self, stmtInfo):
         super().__init__(stmtInfo)
         self.keyword = stmtInfo[1]
+        self.emptyField = stmtInfo[2]
 
-        # TODO: handle stmtINfo[2]
+        # TODO: handle stmtInfo[2]
 
 class DoStatement(Statement):
     def __init__(self, stmtInfo):
@@ -39,22 +40,56 @@ class DoStatement(Statement):
         self.cond_expr = stmtInfo[2]
         self.body_expr = stmtInfo[3]
 
+    def set_cond_expr(self, expr):
+        self.cond_expr = expr
+
+    def set_body_expr(self, expr):
+        self.body_expr = expr
+
+    def update_doStatement(self, stmtInfo):
+        self.stmtInfo = stmtInfo
+        self.set_cond_expr(stmtInfo[2])
+        self.set_body_expr(stmtInfo[3])
+
 class WhileStatement(Statement):
     def __init__(self, stmtInfo):
         super().__init__(stmtInfo)
         self.cond_expr = stmtInfo[2]
         self.body_expr = stmtInfo[3]
 
+    def set_cond_expr(self, expr):
+        self.cond_expr = expr
+
+    def set_body_expr(self, expr):
+        self.body_expr = expr
+
+    def update_whileStatement(self, stmtInfo):
+        self.stmtInfo = stmtInfo
+        self.set_cond_expr(stmtInfo[2])
+        self.set_body_expr(stmtInfo[3])
+
 class TryStatement(Statement):
     def __init__(self, stmtInfo):
         super().__init__(stmtInfo)
-        # TODO:
+        self.tryb_expr = stmtInfo[2]
+        self.pairs_expr = stmtInfo[3]
 
 class IfStatement(Statement):
     def __init__(self, stmtInfo):
         super().__init__(stmtInfo)
         self.cond_expr = stmtInfo[2]
         self.scop_expr = stmtInfo[3]
+
+    def set_cond_expr(self, expr):
+        self.cond_expr = expr
+
+    def set_scop_expr(self, expr):
+        self.scop_expr = expr
+
+    def update_ifStatement(self, stmtInfo):
+        self.stmtInfo = stmtInfo
+        self.set_cond_expr(stmtInfo[2])
+        self.set_scop_expr(stmtInfo[3])
 
 class SwitchStatement(Statement):
     def __init__(self, stmtInfo):

@@ -30,6 +30,8 @@ def create_ast(method):
 if __name__ == '__main__' :
     a, d, dx = AnalyzeAPK(targetPath)
 
+    t_count = 0
+
     for method in dx.get_methods():
         m_ast = create_ast(method)
 
@@ -38,4 +40,10 @@ if __name__ == '__main__' :
         ap.load_ast(m_ast)
         ap.parse_ast()
 
-        break
+        for node in ap.parsedNodes:
+            pprint(node.data)
+
+        t_count += 1
+
+        if t_count == 100:
+            break
