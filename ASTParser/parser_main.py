@@ -45,11 +45,11 @@ if __name__ == '__main__' :
             # print('Node Count : ', len(ap.parsedNodes))
 
             for node in ap.parsedNodes:
-                pprint(node.data)
+                pprint(node.nodeInfo)
             '''
 
             # '''
-            if 'ThrowStatement' in str(m_ast['body']):
+            if 'ArrayCreation' in str(m_ast['body']):
                 ap.load_ast(m_ast)
                 ap.parse_ast()
                 print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
@@ -58,12 +58,12 @@ if __name__ == '__main__' :
                 print('************************************************************************')
 
                 for node in ap.parsedNodes:
-                    pprint(node.data)
+                    pprint(node.nodeInfo)
 
                 print('========================================================================')
 
             t_count += 1
 
-            if t_count == 500:
+            if t_count == 200:
                 break
             # '''
