@@ -54,7 +54,8 @@ actionList = [
 
 
 class ASTParser():
-    def __init__(self):
+    def __init__(self, flag = False):
+        self.isDebug = flag
         self.ast = None
         self.errMsg = ''
         self.parsedNodes = list()
@@ -65,6 +66,10 @@ class ASTParser():
             self.errMsg = 'AST is not loaded, so you have to load it first'
         elif errorType == 2:
             self.errMsg = 'Wrong formmated AST is entered'
+        elif errorType == 3:
+            self.errMsg = 'The TryStatement has no pairs'
+        elif errorType == 4:
+            self.errMsg = 'The switchStatement has no ksv_pairs'
         else :
             self.errMsg = 'TODO'
 
@@ -74,18 +79,21 @@ class ASTParser():
         self.ast = ast['body']
 
     def parse_ast(self):
-        print(set_string_colored('DP Check : function: parse_ast is invoked', Color.GREEN.value))
+        if self.isDebug:
+            print(set_string_colored('DP Check : function: parse_ast is invoked', Color.GREEN.value))
 
         # self.initialize_ast()
         self.visit_tree(self.ast)
 
-        print(len(self.parsedNodes))
+        if self.isDebug:
+            print(len(self.parsedNodes))
         
     def visit_tree(self, ast):
-        print(set_string_colored('DP Check : function: visit_tree is invoked', Color.GREEN.value))
-        print(set_string_colored("DP Check : " + str(ast), Color.GREEN.value))
+        if self.isDebug:
+            print(set_string_colored('DP Check : function: visit_tree is invoked', Color.GREEN.value))
+            print(set_string_colored("DP Check : " + str(ast), Color.GREEN.value))
 
-        pprint(ast)
+            pprint(ast)
 
         if ast is None:
             return
@@ -98,8 +106,9 @@ class ASTParser():
             pass
 
     def visit_statments(self, astBlock):
-        print(set_string_colored('DP Check : function: visit_statments is invoked', Color.GREEN.value))
-        pprint(astBlock)
+        if self.isDebug:
+            print(set_string_colored('DP Check : function: visit_statments is invoked', Color.GREEN.value))
+            pprint(astBlock)
 
         if astBlock[0] == 'BlockStatement':
             stmt = copy_instance(astBlock)
@@ -295,8 +304,50 @@ class ASTParser():
                 else :
                     self.visit_tree(astBlock[3])
 
+        ## TODO : How to handle and how to interpret the pair formed data
         elif astBlock[0] == 'TryStatement':
-            pass
+            stmt = copy_instance(astBlock)
+
+            tryStmtNodeIndex = len(self.parsedNodes)
+
+            # Branch for try block
+            if type(astBlock[2]) == type(list()):
+                stmt[2] = 'extended'
+
+                ts = TryStatement(stmt)
+                stmtNode = ASTNode(ts, tryStmtNodeIndex)
+
+                self.parsedNodes.append(stmtNode)
+
+                if type(astBlock[2][0]) == type(list()):
+                    for subTree in astBlock[2]:
+                        self.visit_tree(subTree)
+                else :
+                    self.visit_tree(astBlock[2])
+            else:
+                ts = TryStatement(stmt)
+                stmtNode = ASTNode(ts, tryStmtNodeIndex)
+
+                self.parsedNodes.append(stmtNode)
+
+            # Branch for pairs
+            # TODO : pairs is??
+            if type(astBlock[3]) == type(list()):
+                stmt[3] = 'extended'
+
+                if 'extended' in stmt:
+                    self.parsedNodes[tryStmtNodeIndex].data.update_tryStatement(stmt)
+                else:
+                    ts = TryStatement(stmt)
+                    stmtNode = ASTNode(ts, tryStmtNodeIndex)
+
+                    self.parsedNodes.append(stmtNode)
+
+                if astBlock[3] is None:
+                    print_parsing_error(3)
+                else:
+                    self.visit_pairs(astBlock[3])
+
 
         elif astBlock[0] == 'IfStatement':
             stmt = copy_instance(astBlock)
@@ -342,11 +393,52 @@ class ASTParser():
                     self.visit_tree(astBlock[3])
 
         elif astBlock[0] == 'SwitchStatement':
-            pass
+            stmt = copy_instance(astBlock)
+
+            switchStmtNodeIndex = len(self.parsedNodes)
+
+            # Branch for try block
+            if type(astBlock[2]) == type(list()):
+                stmt[2] = 'extended'
+
+                ss = SwitchStatement(stmt)
+                stmtNode = ASTNode(ss, switchStmtNodeIndex)
+
+                self.parsedNodes.append(stmtNode)
+
+                if type(astBlock[2][0]) == type(list()):
+                    for subTree in astBlock[2]:
+                        self.visit_tree(subTree)
+                else :
+                    self.visit_tree(astBlock[2])
+            else:
+                ss = SwitchStatement(stmt)
+                stmtNode = ASTNode(ss, switchStmtNodeIndex)
+
+                self.parsedNodes.append(stmtNode)
+
+            # Branch for pairs
+            # TODO : pairs is??
+            if type(astBlock[3]) == type(list()):
+                stmt[3] = 'extended'
+
+                if 'extended' in stmt:
+                    self.parsedNodes[switchStmtNodeIndex].data.update_switchStatement(stmt)
+                else:
+                    ss = SwitchStatement(stmt)
+                    stmtNode = ASTNode(ss, switchStmtNodeIndex)
+
+                    self.parsedNodes.append(stmtNode)
+
+                if astBlock[3] is None:
+                    print_parsing_error(3)
+                else:
+                    self.visit_pairs(astBlock[3])
 
     def visit_actions(self, astBlock):
-        print(set_string_colored('DP Check : function: visit_actions is invoked', Color.GREEN.value))
-        pprint(astBlock)
+        if self.isDebug:
+            print(set_string_colored('DP Check : function: visit_actions is invoked', Color.GREEN.value))
+            pprint(astBlock)
 
         tmp_instance = copy_instance(astBlock)
 
@@ -397,6 +489,18 @@ class ASTParser():
         else:
             pass
 
+    def visit_pairs(self, tupleList):
+        if self.isDebug:
+            print(set_string_colored('DP Check : function: visit_pairs is invoked', Color.GREEN.value))
+            pprint(tupleList)
+
+        for pairTuple in tupleList:
+            for t in pairTuple:
+                if type(t[0]) == type(list()):
+                    for subTree in t:
+                        self.visit_tree(subTree)
+                else :
+                    self.visit_tree(t)
 
     def show_whole_ast(self):
         if self.ast:
@@ -410,4 +514,9 @@ class ASTNode():
     def __init__(self, data, index):
         self.data = data
         self.index = index
-        
+
+# Class for managing the edge information among the parsedNodes of AST
+class ASTEdge():
+    def __init__(self, pIndex, cIndex):
+        self.pIndex = pIndex
+        self.cIndex = cIndex

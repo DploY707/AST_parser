@@ -35,4 +35,4 @@ ENV LC_ALL C.UTF-8
 ENV LANG C.UTF-8
 
 WORKDIR /root/workDir/ASTParser
-# CMD ["python3","parser_main.py"]
+CMD ["python3","parser_main.py"]
