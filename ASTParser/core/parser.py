@@ -123,8 +123,9 @@ class ASTParser():
         elif ast[0] in actionList:
             self.visit_actions(ast)
         else:
-            cn = constNode(ast, len(self.parsedNodes))
-            self.parsedNodes.append(cn)
+            ci = constInfo(ast, len(self.parsedNodes))
+            constNode = ASTNode(ci, len(self.parsedNodes))
+            self.parsedNodes.append(constNode)
 
     def visit_statments(self, astBlock):
         if self.isDebug:
@@ -643,7 +644,7 @@ class ASTEdge():
         self.cIndex = cIndex
 
 # Class for const Node
-class constNode():
-    def __init__(self, constInfo, index):
-        self.constInfo = constInfo
+class constInfo():
+    def __init__(self, data, index):
+        self.data = data
         self.index = index

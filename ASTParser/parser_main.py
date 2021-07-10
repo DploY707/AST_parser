@@ -38,7 +38,7 @@ if __name__ == '__main__' :
         ap = ASTParser()
 
         if m_ast is not None:
-            '''
+            # '''
             ap.load_ast(m_ast)
             ap.parse_ast()
 
@@ -46,9 +46,9 @@ if __name__ == '__main__' :
 
             for node in ap.parsedNodes:
                 pprint(node.nodeInfo)
-            '''
-
             # '''
+
+            '''
             if 'ArrayCreation' in str(m_ast['body']):
                 ap.load_ast(m_ast)
                 ap.parse_ast()
@@ -66,4 +66,4 @@ if __name__ == '__main__' :
 
             if t_count == 200:
                 break
-            # '''
+            '''
