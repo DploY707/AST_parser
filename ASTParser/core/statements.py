@@ -72,7 +72,18 @@ class TryStatement(Statement):
     def __init__(self, stmtInfo):
         super().__init__(stmtInfo)
         self.tryb_expr = stmtInfo[2]
-        self.pairs_expr = stmtInfo[3]
+        self.pairs_expr = stmtInfo[3] # pairs_expr is consist of 1 more tuple (not list)
+
+    def set_tryb_expr(self, expr):
+        self.tryb_expr = expr
+
+    def set_pairs_expr(self, expr):
+        self.pairs_expr = expr
+
+    def update_tryStatement(self, stmtInfo):
+        self.stmtInfo = stmtInfo
+        self.set_tryb_expr(stmtInfo[2])
+        self.set_pairs_expr(stmtInfo[3])
 
 class IfStatement(Statement):
     def __init__(self, stmtInfo):
@@ -94,8 +105,19 @@ class IfStatement(Statement):
 class SwitchStatement(Statement):
     def __init__(self, stmtInfo):
         super().__init__(stmtInfo)
-        # TODO:
+        self.cond_expr = stmtInfo[2]
+        self.ksv_pairs = stmtInfo[3] # pairs_expr is consist of 1 more tuple (not list)
 
+    def set_cond_expr(self, expr):
+        self.tryb_expr = expr
+
+    def set_ksv_pairs(self, expr):
+        self.pairs_expr = expr
+
+    def update_switchStatement(self, stmtInfo):
+        self.stmtInfo = stmtInfo
+        self.set_cond_expr(stmtInfo[2])
+        self.set_ksv_pairs(stmtInfo[3])
 
 # Block state is a special statement
 # TODO : What is block stat is?
