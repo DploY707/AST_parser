@@ -37,13 +37,14 @@ if __name__ == '__main__' :
 
         ap = ASTParser()
 
-        ap.load_ast(m_ast)
-        ap.parse_ast()
+        if m_ast is not None:
+            ap.load_ast(m_ast)
+            ap.parse_ast()
 
-        # print('Node Count : ', len(ap.parsedNodes))
+            # print('Node Count : ', len(ap.parsedNodes))
 
-        for node in ap.parsedNodes:
-            pprint(str(node.data))
+            for node in ap.parsedNodes:
+                pprint(str(node.data))
 
         '''
         if 'SwitchStatement' in str(m_ast['body']):
