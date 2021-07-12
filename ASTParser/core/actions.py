@@ -42,6 +42,10 @@ class ArrayCreation(Action):
 class ArrayInitializer(Action):
     def __init__(self, actionInfo):
         super().__init__(actionInfo)
+        self.params = actionInfo[1]
+
+        # TODO : handle this case
+        self.tn = actionInfo[2]
 
 class Assignment(Action):
     def __init__(self, actionInfo):
@@ -68,18 +72,42 @@ class Assignment(Action):
 class BinaryInfix(Action):
     def __init__(self, actionInfo):
         super().__init__(actionInfo)
+        self.left = actionInfo[1][0]
+        self.right = actionInfo[1][1]
+        self.op = actionInfo[2]
+
+    def set_left(self, expr):
+        self.left = expr
+
+    def set_right(self, expr):
+        self.right = expr
+
+    def set_op(self, expr):
+        self.op = expr
+
+    def update_binaryInfix(actionInfo):
+        self.actionInfo = actionInfo
+        set_left(actionInfo[1][0])
+        set_right(actionInfo[1][1])
+        set_op(actionInfo[2])
+
 
 class Cast(Action):
     def __init__(self, actionInfo):
         super().__init__(actionInfo)
+        self.left_arr = actionInfo[1]
 
 class FieldAccess(Action):
     def __init__(self, actionInfo):
         super().__init__(actionInfo)
+        self.left_arr = actionInfo[1]
+        self.triple = actionInfo[2]
 
 class Literal(Action):
     def __init__(self, actionInfo):
         super().__init__(actionInfo)
+        self.result = actionInfo[1]
+        self.tt = actionInfo[2]
 
 class Local(Action):
     def __init__(self, actionInfo):
@@ -89,6 +117,10 @@ class Local(Action):
 class MethodInvocation(Action):
     def __init__(self, actionInfo):
         super().__init__(actionInfo)
+        self.params = actionInfo[1]
+        self.triple = actionInfo[2]
+        self.name = actionInfo[3]
+        self.base_flag = actionInfo[4]
 
 class Parenthesis(Action):
     def __init__(self, actionInfo):

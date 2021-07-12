@@ -18,14 +18,14 @@ from core.statements import BlockStatement
 from core.actions import Action
 from core.actions import ArrayAccess
 from core.actions import ArrayCreation
-# from core.actions import ArrayInitializer
+from core.actions import ArrayInitializer
 from core.actions import Assignment
-# from core.actions import BinaryInfix
+from core.actions import BinaryInfix
 # from core.actions import Cast
-# from core.actions import FieldAccess
-# from core.actions import Literal
-# from core.actions import Local
-# from core.actions import MethodInvocation
+from core.actions import FieldAccess
+from core.actions import Literal
+from core.actions import Local
+from core.actions import MethodInvocation
 # from core.actions import Parenthesis
 # from core.actions import TypeName
 # from core.actions import Unary
@@ -88,8 +88,26 @@ class ASTParser():
             self.errMsg = 'Wrong operand in ArrayAccess action'
         elif errorType == 6:
             self.errMsg = 'Wrong operand in ArrayCreation action'
+        elif errorType == 7:
+            self.errMsg = 'Wrong operand in ArrayInitializer action'
+        elif errorType == 70:
+            self.errMsg = 'Wrong operand in ArrayInitializer action, tn is not None'
         elif errorType == 8:
             self.errMsg = 'Wrong operand in Assignment action'
+        elif errorType == 80:
+            self.errMsg = 'Wrong operand in Assignment action, op is a list() data'
+        elif errorType == 9:
+            self.errMsg = 'Wrong operand in BinaryInfix action'
+        elif errorType == 90:
+            self.errMsg = 'Wrong operand in BinaryInfix action, op is a list() data'
+        elif errorType == 11:
+            self.errMsg = 'Wrong operand in FieldAccess action'
+        elif errorType == 12:
+            self.errMsg = 'Wrong operand in Literal action, tt field is a list() data'
+        elif errorType == 13:
+            self.errMsg = 'Wrong operand in Local action'
+        elif errorType == 14:
+            self.errMsg = 'Wrong operand in Local MethodInvocation'
         else :
             self.errMsg = 'TODO'
 
@@ -123,8 +141,8 @@ class ASTParser():
         elif ast[0] in actionList:
             self.visit_actions(ast)
         else:
-            ci = constInfo(ast, len(self.parsedNodes))
-            constNode = ASTNode(ci, len(self.parsedNodes))
+            cd = ConstData(ast, len(self.parsedNodes))
+            constNode = ASTNode(cd, len(self.parsedNodes))
             self.parsedNodes.append(constNode)
 
     def visit_statments(self, astBlock):
@@ -453,7 +471,7 @@ class ASTParser():
                     self.parsedNodes.append(stmtNode)
 
                 if astBlock[3] is None:
-                    self.print_parsing_error(3)
+                    self.print_parsing_error(4)
                 else:
                     self.visit_pairs(astBlock[3])
 
@@ -467,7 +485,7 @@ class ASTParser():
 
             arrayAccessActionIndex = len(self.parsedNodes)
 
-            # Branch for lhs expression
+            # Branch for arr expression
             if type(astBlock[1][0]) == type(list()):
                 action[1][0] = 'extended'
 
@@ -476,11 +494,15 @@ class ASTParser():
 
                 self.parsedNodes.append(actionNode)
 
-                self.visit_tree(astBlock[1][0])
+                if type(astBlock[1][0][0]) == type(list()):
+                    for subTree in astBlock[1][0]:
+                        self.visit_tree(subTree)
+                else :
+                    self.visit_tree(astBlock[1][0])
             else:
                 self.print_parsing_error(5)
 
-            # Branch for rhs expression
+            # Branch for ind expression
             if type(astBlock[1][1]) == type(list()):
                 action[1][1] = 'extended'
 
@@ -492,7 +514,11 @@ class ASTParser():
 
                     self.parsedNodes.append(actionNode)
 
-                    self.visit_tree(astBlock[1][1])
+                    if type(astBlock[1][1][0]) == type(list()):
+                        for subTree in astBlock[1][1]:
+                           self.visit_tree(subTree)
+                    else :
+                        self.visit_tree(astBlock[1][1])
             else:
                 self.print_parsing_error(5)
 
@@ -501,7 +527,7 @@ class ASTParser():
 
             arrayCreationActionIndex = len(self.parsedNodes)
 
-            # Branch for lhs expression
+            # Branch for tn_and_params expression
             if type(astBlock[1]) == type(list()):
                 action[1] = 'extended'
 
@@ -518,7 +544,7 @@ class ASTParser():
             else:
                 self.print_parsing_error(6)
 
-            # Branch for rhs expression
+            # Branch for dim expression
             if type(astBlock[2]) == type(list()):
                 action[2] = 'extended'
 
@@ -535,12 +561,36 @@ class ASTParser():
                             self.visit_tree(subTree)
                     else :
                         self.visit_tree(astBlock[2])
+            # In this case, dim expression is just a const value like 1
             else:
                 pass
                 # self.print_parsing_error(6)
 
         elif astBlock[0] == 'ArrayInitializer':
-            pass
+            action = copy_instance(astBlock)
+
+            arrayInitializerIndex = len(self.parsedNodes)
+
+            # Branch for params expression
+            if type(astBlock[1]) == type(list()):
+                action[1] = 'extended'
+
+                arrayInitializerAction = ArrayInitializer(action)
+                actionNode = ASTNode(arrayInitializerAction, arrayInitializerIndex)
+
+                self.parsedNodes.append(actionNode)
+
+                if type(astBlock[1][0]) == type(list()):
+                    for subTree in astBlock[1]:
+                        self.visit_tree(subTree)
+                else :
+                    self.visit_tree(astBlock[1])
+            else:
+                self.print_parsing_error(7)
+
+            if astBlock[2] is not None:
+                self.print_parsing_error(70)
+            # TODO : Add a routine for handling action[2], 'tn' field
 
         elif astBlock[0] == 'Assignment':
             action = copy_instance(astBlock)
@@ -556,7 +606,11 @@ class ASTParser():
 
                 self.parsedNodes.append(actionNode)
 
-                self.visit_tree(astBlock[1][0])
+                if type(astBlock[1][0][0]) == type(list()):
+                        for subTree in astBlock[1][0]:
+                           self.visit_tree(subTree)
+                else:
+                    self.visit_tree(astBlock[1][0])
             else:
                 self.print_parsing_error(8)
 
@@ -572,38 +626,172 @@ class ASTParser():
 
                     self.parsedNodes.append(actionNode)
 
-                    self.visit_tree(astBlock[1][1])
+                    if type(astBlock[1][1][0]) == type(list()):
+                        for subTree in astBlock[1][1]:
+                           self.visit_tree(subTree)
+                    else :
+                        self.visit_tree(astBlock[1][1])
             else:
                 self.print_parsing_error(8)
 
+            if type(astBlock[2]) == type(list()):
+                self.print_parsing_error(80)
+
         elif astBlock[0] == 'BinaryInfix':
-            pass
+            action = copy_instance(astBlock)
+
+            binaryInfixActionIndex = len(self.parsedNodes)
+
+            # Branch for left expression
+            if type(astBlock[1][0]) == type(list()):
+                action[1][0] = 'extended'
+
+                binaryInfixAction = BinaryInfix(action)
+                actionNode = ASTNode(binaryInfixAction, binaryInfixActionIndex)
+
+                self.parsedNodes.append(actionNode)
+
+                if type(astBlock[1][0][0]) == type(list()):
+                        for subTree in astBlock[1][0]:
+                           self.visit_tree(subTree)
+                else :
+                    self.visit_tree(astBlock[1][0])
+            else:
+                self.print_parsing_error(9)
+
+            # Branch for right expression
+            if type(astBlock[1][1]) == type(list()):
+                action[1][1] = 'extended'
+
+                if 'extended' in action:
+                    self.parsedNodes[binaryInfixActionIndex].nodeInfo.update_binaryInfix(action)
+                else:
+                    binaryInfixAction = BinaryInfix(action)
+                    actionNode = ASTNode(binaryInfixAction, binaryInfixActionIndex)
+
+                    self.parsedNodes.append(actionNode)
+
+                    if type(astBlock[1][1][0]) == type(list()):
+                        for subTree in astBlock[1][1]:
+                           self.visit_tree(subTree)
+                    else :
+                        self.visit_tree(astBlock[1][1])
+            else:
+                self.print_parsing_error(9)
+
+            if type(astBlock[2]) == type(list()):
+                self.print_parsing_error(90)
 
         elif astBlock[0] == 'Cast':
-            pass
+            action = copy_instance(astBlock)
 
         elif astBlock[0] == 'FieldAccess':
-            pass
+            action = copy_instance(astBlock)
+
+            fieldAccessActionIndex = len(self.parsedNodes)
+
+            # Branch for left expression
+            if type(astBlock[1]) == type(list()):
+                action[1] = 'extended'
+
+                fieldAccessAction = FieldAccess(action)
+                actionNode = ASTNode(fieldAccessAction, fieldAccessActionIndex)
+
+                self.parsedNodes.append(actionNode)
+
+                for subTree in astBlock[1]:
+                    self.visit_tree(subTree)
+
+            else:
+                self.print_parsing_error(11)
 
         elif astBlock[0] == 'Literal':
-            pass
+            action = copy_instance(astBlock)
+
+            literalActionIndex = len(self.parsedNodes)
+
+            # Branch for result expression
+            if type(astBlock[1]) == type(list()):
+                action[1] = 'extended'
+
+                literalAction = Literal(action)
+                actionNode = ASTNode(literalAction, literalActionIndex)
+
+                self.parsedNodes.append(actionNode)
+
+                if type(astBlock[1][0]) == type(list()):
+                    for subTree in astBlock[1]:
+                        self.visit_tree(subTree)
+                else :
+                    self.visit_tree(astBlock[1])
+
+            else:
+                literalAction = Literal(action)
+                actionNode = ASTNode(literalAction, literalActionIndex)
+
+                self.parsedNodes.append(actionNode)
+
+            if type(astBlock[2]) == type(list()):
+                self.print_parsing_error(12)
 
         elif astBlock[0] == 'Local':
-            pass
-            
+            action = copy_instance(astBlock)
+
+            localActionIndex = len(self.parsedNodes)
+
+            if astBlock[1] is None or type(astBlock[1]) == type(list()):
+                self.print_parsing_error(13)
+                return
+
+            LocalAction = Local(action)
+            actionNode = ASTNode(LocalAction, localActionIndex)
+
+            self.parsedNodes.append(actionNode)
+
+
         elif astBlock[0] == 'MethodInvocation':
-            pass
+            action = copy_instance(astBlock)
+
+            methodInvocationIndex = len(self.parsedNodes)
+
+            # TODO : Check the base flag should be considered or not
+            # Branch for params expression
+            if type(astBlock[1]) == type(list()):
+                action[1] = 'extended'
+
+                methodInvocationAction = MethodInvocation(action)
+                actionNode = ASTNode(methodInvocationAction, methodInvocationIndex)
+
+                self.parsedNodes.append(actionNode)
+
+                if type(astBlock[1][0]) == type(list()):
+                    for subTree in astBlock[1]:
+                        self.visit_tree(subTree)
+                else :
+                    self.visit_tree(astBlock[1])
+            else:
+                self.print_parsing_error(14)
+                print(astBlock)
 
         elif astBlock[0] == 'Parenthesis':
-            pass
+            action = copy_instance(astBlock)
 
         elif astBlock[0] == 'TypeName':
-            pass
+            action = copy_instance(astBlock)
 
         elif astBlock[0] == 'Unary':
-            pass
+            action = copy_instance(astBlock)
+
+        elif astBlock[0] == 'Dummy':
+            action = copy_instance(astBlock)
+
+        elif astBlock[0] == 'ClassInstanceCreation':
+            action = copy_instance(astBlock)
 
         else:
+            # TODO : Handle the unknown type of actions
+            print(astBlock)
+
             tmp_instance = copy_instance(astBlock)
 
             tmp_action = Action(tmp_instance)
@@ -644,7 +832,7 @@ class ASTEdge():
         self.cIndex = cIndex
 
 # Class for const Node
-class constInfo():
+class ConstData():
     def __init__(self, data, index):
         self.data = data
         self.index = index
