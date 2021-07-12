@@ -10,6 +10,8 @@ from androguard.misc import AnalyzeAPK
 from core.parser import ASTParser
 from core.statements import Statement
 
+from core.parser import ConstData
+
 import networkx as nx
 
 targetPath = 'data/okhttp-3.1.0_dex.jar'
@@ -36,33 +38,10 @@ if __name__ == '__main__' :
         m_ast = create_ast(method)
 
         ap = ASTParser()
-
+        
         if m_ast is not None:
             ap.load_ast(m_ast)
             ap.parse_ast()
 
-            # print('Node Count : ', len(ap.parsedNodes))
-
             for node in ap.parsedNodes:
-                pprint(str(node.data))
-
-        '''
-        if 'SwitchStatement' in str(m_ast['body']):
-            ap.load_ast(m_ast)
-            ap.parse_ast()
-            print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
-
-            pprint(m_ast['body'])
-            print('************************************************************************')
-
-
-            for node in ap.parsedNodes:
-                pprint(node.data)
-
-            print('========================================================================')
-
-        t_count += 1
-
-        if t_count == 500:
-            break
-        '''
+                pprint(node.nodeInfo)
