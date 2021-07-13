@@ -43,5 +43,5 @@ if __name__ == '__main__' :
             ap.load_ast(m_ast)
             ap.parse_ast()
 
-            # for node in ap.parsedNodes:
-                # pprint(node.nodeInfo)
+            for node in ap.parsedNodes:
+                pprint(node.nodeInfo)
