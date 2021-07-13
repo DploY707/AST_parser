@@ -16,6 +16,17 @@ class LocalDeclarationStatement(Statement):
         self.expr = stmtInfo[1]
         self.decl = stmtInfo[2]
 
+    def set_expr(self, expr):
+        self.expr = expr
+
+    def set_decl(self, expr):
+        self.decl = expr
+
+    def update_localDeclarationStatement(self, stmtInfo):
+        self.stmtInfo = stmtInfo
+        self.set_expr(stmtInfo[1])
+        self.set_decl(stmtInfo[2])
+
 class ReturnStatement(Statement):
     def __init__(self, stmtInfo):
         super().__init__(stmtInfo)
