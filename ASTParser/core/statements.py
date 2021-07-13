@@ -100,18 +100,18 @@ class IfStatement(Statement):
     def __init__(self, stmtInfo):
         super().__init__(stmtInfo)
         self.cond_expr = stmtInfo[2]
-        self.scop_expr = stmtInfo[3]
+        self.body_expr = stmtInfo[3]
 
     def set_cond_expr(self, expr):
         self.cond_expr = expr
 
-    def set_scop_expr(self, expr):
-        self.scop_expr = expr
+    def set_body_expr(self, expr):
+        self.body_expr = expr
 
     def update_ifStatement(self, stmtInfo):
         self.stmtInfo = stmtInfo
         self.set_cond_expr(stmtInfo[2])
-        self.set_scop_expr(stmtInfo[3])
+        self.set_body_expr(stmtInfo[3])
 
 class SwitchStatement(Statement):
     def __init__(self, stmtInfo):

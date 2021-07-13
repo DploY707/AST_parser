@@ -36,6 +36,7 @@ from core.utils import Color
 from core.utils import set_string_colored
 
 stmtList = [
+        'BlockStatement',
         'ExpressionStatement',
         'LocalDeclarationStatement',
         'ReturnStatement',
@@ -46,7 +47,6 @@ stmtList = [
         'TryStatement',
         'IfStatement',
         'SwitchStatement',
-        'BlockStatement',
         ]
 
 actionList = [
@@ -77,16 +77,58 @@ class ASTParser():
         self.parsedEdges = list()
 
     def print_parsing_error(self, errorType):
+        # Errors on visit fuctions
         if errorType == -1:
             self.errMsg = 'AST has wrong statement data'
         elif errorType == -2:
             self.errMsg = 'AST has wrong action data'
-        elif errorType == 1:
+
+        # Error that AST is not loaded
+        elif errorType == 0:
             self.errMsg = 'AST is not loaded, so you have to load it first'
+        
+        # Error on parsing statements
+        elif errorType == 1:
+            self.errMsg = 'Wrong operand in BlockStatement'
+        elif errorType == 2:
+            self.errMsg = 'Wrong operand in ExpressionStatement'
+        elif errorType == 3:
+            self.errMsg = 'Wrong operand in LocalDeclarationStatement(decl)'
+        elif errorType == 4:
+            self.errMsg = 'Wrong operand in ReturnStatement'
+        elif errorType == 5:
+            self.errMsg = 'Wrong operand in ThrowStatement'
+        elif errorType == 6:
+            self.errMsg = 'Wrong operand in JumpStatement'
+        elif errorType == 70:
+            self.errMsg = 'Wrong operand in DoStatement(cond_expr)'
+        elif errorType == 71:
+            self.errMsg = 'Wrong operand in DoStatement(body_expr)'
+        elif errorType == 80:
+            self.errMsg = 'Wrong operand in WhileStatement(cond_expr)'
+        elif errorType == 81:
+            self.errMsg = 'Wrong operand in WhileStatement(body_expr)'
+        elif errorType == 90:
+            self.errMsg = 'Wrong operand in TryStatement(tryb_expr)'
+        elif errorType == 91:
+            self.errMsg = 'Wrong operand in TryStatement(pairs_expr)'
+        elif errorType == 92:
+            self.errMsg = 'Wrong operand in TryStatement(pairs_expr), pairs_expr is None'
+        elif errorType == 100:
+            self.errMsg = 'Wrong operand in IfStatement(cond_expr)'
+        elif errorType == 101:
+            self.errMsg = 'Wrong operand in IfStatement(body_expr)'
+        elif errorType == 110:
+            self.errMsg = 'Wrong operand in SwitchStatement(cond_expr)'
+        elif errorType == 111:
+            self.errMsg = 'Wrong operand in SwitchStatement(ksv_pairs)'
+        elif errorType == 112:
+            self.errMsg = 'Wrong operand in SwitchStatement(ksv_pairs), ksv_pairs is None'
+
+
         elif errorType == 2:
             self.errMsg = 'Wrong formmated AST is entered'
-        elif errorType == 101:
-            self.errMsg = 'Wrong operand in LocalDeclarationStatement'
+        
         elif errorType == 3:
             self.errMsg = 'The TryStatement has no pairs'
         elif errorType == 4:
@@ -181,24 +223,32 @@ class ASTParser():
 
         if astBlock[0] == 'BlockStatement':
             stmt = copy_instance(astBlock)
-            stmt[2] = 'extended'
 
-            bs = BlockStatement(stmt)
-            stmtNode = ASTNode(bs, len(self.parsedNodes))
+            blockStmtNodeIndex = len(self.parsedNodes)
 
-            self.parsedNodes.append(stmtNode)
+            if type(astBlock[2]) == type(list()):
+                stmt[2] = 'extended'
 
-            for subTree in astBlock[2]:
-                self.visit_tree(subTree)
+                bs = BlockStatement(stmt)
+                stmtNode = ASTNode(bs, blockStmtNodeIndex)
+
+                self.parsedNodes.append(stmtNode)
+
+                for subTree in astBlock[2]:
+                    self.visit_tree(subTree)
+            else:
+                self.print_parsing_error(1)
 
         elif astBlock[0] == 'ExpressionStatement':
             stmt = copy_instance(astBlock)
 
+            exprStmtNodeIndex = len(self.parsedNodes)
+
             if type(astBlock[1]) == type(list()):
                 stmt[1] = 'extended'
 
                 es = ExpressionStatement(stmt)
-                stmtNode = ASTNode(es, len(self.parsedNodes))
+                stmtNode = ASTNode(es, exprStmtNodeIndex)
 
                 self.parsedNodes.append(stmtNode)
 
@@ -208,22 +258,19 @@ class ASTParser():
                 else :
                     self.visit_tree(astBlock[1])
             else:
-                es = ExpressionStatement(stmt)
-                stmtNode = ASTNode(es, len(self.parsedNodes))
-
-                self.parsedNodes.append(stmtNode)
+                self.print_parsing_error(2)
 
         elif astBlock[0] == 'LocalDeclarationStatement':
             stmt = copy_instance(astBlock)
 
-            localDeclarationStmtNodeIndex = len(self.parsedNodes)
+            localDeclStmtNodeIndex = len(self.parsedNodes)
 
-            # Branch for expr expression
+            # Branch for expr
             if type(astBlock[1]) == type(list()):
                 stmt[1] = 'extended'
 
                 lds = LocalDeclarationStatement(stmt)
-                stmtNode = ASTNode(lds, localDeclarationStmtNodeIndex)
+                stmtNode = ASTNode(lds, localDeclStmtNodeIndex)
 
                 self.parsedNodes.append(stmtNode)
 
@@ -233,20 +280,21 @@ class ASTParser():
                 else :
                     self.visit_tree(astBlock[1])
             else:
+                # CHECK: In usual, this case, astBlock[1] is None
                 lds = LocalDeclarationStatement(stmt)
-                stmtNode = ASTNode(lds, localDeclarationStmtNodeIndex)
+                stmtNode = ASTNode(lds, localDeclStmtNodeIndex)
 
                 self.parsedNodes.append(stmtNode)
 
-            # Branch for decl expression
+            # Branch for decl
             if type(astBlock[2]) == type(list()):
                 stmt[2] = 'extended'
 
                 if 'extended' in stmt:
-                    self.parsedNodes[localDeclarationStmtNodeIndex].nodeInfo.update_localDeclarationStatement(stmt)
+                    self.parsedNodes[localDeclStmtNodeIndex].nodeInfo.update_localDeclarationStatement(stmt)
                 else:
                     lds = LocalDeclarationStatement(stmt)
-                    stmtNode = ASTNode(lds, localDeclarationStmtNodeIndex)
+                    stmtNode = ASTNode(lds, localDeclStmtNodeIndex)
 
                     self.parsedNodes.append(stmtNode)
 
@@ -256,17 +304,18 @@ class ASTParser():
                 else :
                     self.visit_tree(astBlock[2])
             else:
-                self.print_parsing_error(101)
-                # print(astBlock)
+                self.print_parsing_error(3)
 
         elif astBlock[0] == 'ReturnStatement':
             stmt = copy_instance(astBlock)
+
+            returnStmtNodeIndex = len(self.parsedNodes)
 
             if type(astBlock[1]) == type(list()):
                 stmt[1] = 'extended'
 
                 rs = ReturnStatement(stmt)
-                stmtNode = ASTNode(rs, len(self.parsedNodes))
+                stmtNode = ASTNode(rs, returnStmtNodeIndex)
 
                 self.parsedNodes.append(stmtNode)
 
@@ -276,19 +325,23 @@ class ASTParser():
                 else :
                     self.visit_tree(astBlock[1])
             else:
+                # CHECK: In usual, this case, astBlock[1] is None
+                # self.print_parsing_error(4)
                 rs = ReturnStatement(stmt)
-                stmtNode = ASTNode(rs, len(self.parsedNodes))
+                stmtNode = ASTNode(rs, returnStmtNodeIndex)
 
                 self.parsedNodes.append(stmtNode)
 
         elif astBlock[0] == 'ThrowStatement':
             stmt = copy_instance(astBlock)
 
+            throwStmtNodeIndex = len(self.parsedNodes)
+
             if type(astBlock[1]) == type(list()):
                 stmt[1] = 'extended'
 
                 ts = ThrowStatement(stmt)
-                stmtNode = ASTNode(ts, len(self.parsedNodes))
+                stmtNode = ASTNode(ts, throwStmtNodeIndex)
 
                 self.parsedNodes.append(stmtNode)
 
@@ -298,25 +351,28 @@ class ASTParser():
                 else :
                     self.visit_tree(astBlock[1])
             else:
-                ts = ThrowStatement(stmt)
-                stmtNode = ASTNode(ts, len(self.parsedNodes))
-
-                self.parsedNodes.append(stmtNode)
+                self.print_parsing_error(5)
 
         elif astBlock[0] == 'JumpStatement':
             stmt = copy_instance(astBlock)
 
+            jmpStmtNodeIndex = len(self.parsedNodes)
+
             js = JumpStatement(stmt)
-            stmtNode = ASTNode(js, len(self.parsedNodes))
+            stmtNode = ASTNode(js, jmpStmtNodeIndex)
 
             self.parsedNodes.append(stmtNode)
+
+            #TODO : Add a routine that prevent crash or wrong behaviors
+            # Blah Blah Blah Blah Blah Blah
+            # self.print_parsing_error(6)
 
         elif astBlock[0] == 'DoStatement':
             stmt = copy_instance(astBlock)
 
             doStmtNodeIndex = len(self.parsedNodes)
 
-            # Branch for control expression
+            # Branch for cond_expr
             if type(astBlock[2]) == type(list()):
                 stmt[2] = 'extended'
 
@@ -331,12 +387,9 @@ class ASTParser():
                 else :
                     self.visit_tree(astBlock[2])
             else:
-                ds = DoStatement(stmt)
-                stmtNode = ASTNode(ds, doStmtNodeIndex)
+                self.print_parsing_error(70)
 
-                self.parsedNodes.append(stmtNode)
-
-            # Branch for scopes(body) expression
+            # Branch for body_expr
             if type(astBlock[3]) == type(list()):
                 stmt[3] = 'extended'
 
@@ -353,13 +406,15 @@ class ASTParser():
                         self.visit_tree(subTree)
                 else :
                     self.visit_tree(astBlock[3])
+            else:
+                self.print_parsing_error(71)
 
         elif astBlock[0] == 'WhileStatement':
             stmt = copy_instance(astBlock)
 
             whileStmtNodeIndex = len(self.parsedNodes)
 
-            # Branch for control expression
+            # Branch for cond_expr
             if type(astBlock[2]) == type(list()):
                 stmt[2] = 'extended'
 
@@ -374,12 +429,9 @@ class ASTParser():
                 else :
                     self.visit_tree(astBlock[2])
             else:
-                ws = WhileStatement(stmt)
-                stmtNode = ASTNode(ws, whileStmtNodeIndex)
+                self.print_parsing_error(80)
 
-                self.parsedNodes.append(stmtNode)
-
-            # Branch for scopes(body) expression
+            # Branch for body_expr
             if type(astBlock[3]) == type(list()):
                 stmt[3] = 'extended'
 
@@ -396,14 +448,16 @@ class ASTParser():
                         self.visit_tree(subTree)
                 else :
                     self.visit_tree(astBlock[3])
+            else:
+                self.print_parsing_error(81)
 
-        ## TODO : How to handle and how to interpret the pair formed data
+        # CHECK : what is the meaning of pair formed data
         elif astBlock[0] == 'TryStatement':
             stmt = copy_instance(astBlock)
 
             tryStmtNodeIndex = len(self.parsedNodes)
 
-            # Branch for try block
+            # Branch for tryb_expr
             if type(astBlock[2]) == type(list()):
                 stmt[2] = 'extended'
 
@@ -418,16 +472,13 @@ class ASTParser():
                 else :
                     self.visit_tree(astBlock[2])
             else:
-                ts = TryStatement(stmt)
-                stmtNode = ASTNode(ts, tryStmtNodeIndex)
+                self.print_parsing_error(90)
 
-                self.parsedNodes.append(stmtNode)
-
-            # Branch for pairs
-            # TODO : pairs is??
+            # Branch for pairs_expr
             if type(astBlock[3]) == type(list()):
                 stmt[3] = 'extended'
 
+                # Node Creation
                 if 'extended' in stmt:
                     self.parsedNodes[tryStmtNodeIndex].nodeInfo.update_tryStatement(stmt)
                 else:
@@ -436,18 +487,20 @@ class ASTParser():
 
                     self.parsedNodes.append(stmtNode)
 
+                # Visit the pair formed expr for parsing the AST
                 if astBlock[3] is None:
-                    self.print_parsing_error(3)
+                    self.print_parsing_error(92)
                 else:
                     self.visit_pairs(astBlock[3])
-
+            else:
+                self.print_parsing_error(91)
 
         elif astBlock[0] == 'IfStatement':
             stmt = copy_instance(astBlock)
 
             ifStmtNodeIndex = len(self.parsedNodes)
 
-            # Branch for control expression
+            # Branch for cond_expr
             if type(astBlock[2]) == type(list()):
                 stmt[2] = 'extended'
 
@@ -462,12 +515,9 @@ class ASTParser():
                 else :
                     self.visit_tree(astBlock[2])
             else:
-                ifs = IfStatement(stmt)
-                stmtNode = ASTNode(ifs, ifStmtNodeIndex)
+                self.print_parsing_error(100)
 
-                self.parsedNodes.append(stmtNode)
-
-            # Branch for scopes(body) expression
+            # Branch for body_expr
             if type(astBlock[3]) == type(list()):
                 stmt[3] = 'extended'
 
@@ -484,13 +534,15 @@ class ASTParser():
                         self.visit_tree(subTree)
                 else :
                     self.visit_tree(astBlock[3])
+            else:
+                self.print_parsing_error(101)
 
         elif astBlock[0] == 'SwitchStatement':
             stmt = copy_instance(astBlock)
 
             switchStmtNodeIndex = len(self.parsedNodes)
 
-            # Branch for try block
+            # Branch for cond_expr
             if type(astBlock[2]) == type(list()):
                 stmt[2] = 'extended'
 
@@ -505,13 +557,10 @@ class ASTParser():
                 else :
                     self.visit_tree(astBlock[2])
             else:
-                ss = SwitchStatement(stmt)
-                stmtNode = ASTNode(ss, switchStmtNodeIndex)
+                self.print_parsing_error(110)
 
-                self.parsedNodes.append(stmtNode)
-
-            # Branch for pairs
-            # TODO : pairs is??
+            # Branch for ksv_pairs
+            # CHECK : How to interpret the meaning of pairs
             if type(astBlock[3]) == type(list()):
                 stmt[3] = 'extended'
 
@@ -524,9 +573,12 @@ class ASTParser():
                     self.parsedNodes.append(stmtNode)
 
                 if astBlock[3] is None:
-                    self.print_parsing_error(4)
+                    self.print_parsing_error(112)
                 else:
                     self.visit_pairs(astBlock[3])
+            else:
+                self.print_parsing_error(111)
+                
         else:
             self.print_parsing_error(-1)
 
@@ -971,7 +1023,7 @@ class ASTParser():
                     else:
                         self.print_parsing_error(184)
                         print(astBlock[1][1])
-                        
+
                 elif astBlock[1][0].startswith('??? Unexpected op'):
                     # TODO: case 6 :dummy('??? Unexpected op: ' + type(op).__name__)
                     self.print_parsing_error(185)
@@ -1049,7 +1101,7 @@ class ASTParser():
         if self.ast:
             pprint(self.ast)
         else:
-            self.print_parsing_error(1)
+            self.print_parsing_error(0)
 
 
 # Class for parsed node of AST
