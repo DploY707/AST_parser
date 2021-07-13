@@ -77,11 +77,13 @@ class ASTParser():
         self.parsedEdges = list()
 
     def print_parsing_error(self, errorType):
-        # Errors on visit fuctions
+        # Errors in large scale
         if errorType == -1:
             self.errMsg = 'ERR_NO(-1): AST has wrong statement data'
         elif errorType == -2:
             self.errMsg = 'ERR_NO(-2): AST has wrong action data'
+        elif errorType == -3:
+            self.errMsg = 'ERR_NO(-3): parent node index is an invalid value'
 
         # Error that AST is not loaded
         elif errorType == 0:
@@ -200,7 +202,7 @@ class ASTParser():
         if self.isDebug:
             print(len(self.parsedNodes))
         
-    def visit_tree(self, ast):
+    def visit_tree(self, ast, parent = -1):
         if self.isDebug:
             print(set_string_colored('DP Check : function: visit_tree is invoked', Color.GREEN.value))
             print(set_string_colored("DP Check : " + str(ast), Color.GREEN.value))
@@ -211,15 +213,15 @@ class ASTParser():
             return
 
         if ast[0] in stmtList:
-            self.visit_statments(ast)
+            self.visit_statments(ast, parent)
         elif ast[0] in actionList:
-            self.visit_actions(ast)
+            self.visit_actions(ast, parent)
         else:
             cd = ConstData(ast, len(self.parsedNodes))
             constNode = ASTNode(cd, len(self.parsedNodes))
             self.parsedNodes.append(constNode)
 
-    def visit_statments(self, astBlock):
+    def visit_statments(self, astBlock, parent):
         if self.isDebug:
             print(set_string_colored('DP Check : function: visit_statments is invoked', Color.GREEN.value))
             pprint(astBlock)
@@ -585,7 +587,7 @@ class ASTParser():
         else:
             self.print_parsing_error(-1)
 
-    def visit_actions(self, astBlock):
+    def visit_actions(self, astBlock, parent):
         if self.isDebug:
             print(set_string_colored('DP Check : function: visit_actions is invoked', Color.GREEN.value))
             pprint(astBlock)
@@ -1102,6 +1104,15 @@ class ASTParser():
                 else :
                     self.visit_tree(t)
 
+    def create_edges(self, pIndex, cIndex, type):
+        if cIndex != 0:
+            if pIndex != -1:
+                ast_edge = ASTEdge(pIndex, cIndex, type)
+
+                self.parsedEdges.append(ast_edge)
+            else:
+                self.print_parsing_error(-3)
+
     def show_whole_ast(self):
         if self.ast:
             pprint(self.ast)
@@ -1117,9 +1128,10 @@ class ASTNode():
 
 # Class for managing the edge information among the parsedNodes of AST
 class ASTEdge():
-    def __init__(self, pIndex, cIndex):
+    def __init__(self, pIndex, cIndex, type):
         self.pIndex = pIndex
         self.cIndex = cIndex
+        self.type = ''
 
 # Class for const Node
 class ConstData():
