@@ -12,6 +12,8 @@ from core.statements import Statement
 
 from core.parser import ConstData
 
+from core.graph import ASTGraph
+
 import networkx as nx
 
 targetPath = 'data/okhttp-3.1.0_dex.jar'
@@ -46,5 +48,12 @@ if __name__ == '__main__' :
             # for node in ap.parsedNodes:
                 # pprint(node.nodeInfo)
 
-            for edge in ap.parsedEdges:
-                pprint(edge)
+            # for edge in ap.parsedEdges:
+                # pprint(edge)
+
+        ag = ASTGraph(ap.parsedNodes, ap.parsedEdges)
+        ag.graph_initialize()
+
+        ag.save_graph_png('./' + str(ap).split(' ')[-1] + '.png')
+
+        break
