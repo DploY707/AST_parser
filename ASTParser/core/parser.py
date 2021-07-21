@@ -75,6 +75,7 @@ class ASTParser():
         self.errMsg = ''
         self.parsedNodes = list()
         self.parsedEdges = list()
+        self.entryFlag = True
 
     def print_parsing_error(self, errorType):
         # Errors in large scale
@@ -83,7 +84,7 @@ class ASTParser():
         elif errorType == -2:
             self.errMsg = 'ERR_NO(-2): AST has wrong action data'
         elif errorType == -3:
-            self.errMsg = 'ERR_NO(-3): parent node index is an invalid value'
+            self.errMsg = 'ERR_NO(-3): Invalied node index value is used on connecting edges'
 
         # Error that AST is not loaded
         elif errorType == 0:
@@ -202,7 +203,7 @@ class ASTParser():
         if self.isDebug:
             print(len(self.parsedNodes))
         
-    def visit_tree(self, ast, parent = -1):
+    def visit_tree(self, ast, pIndex = -1):
         if self.isDebug:
             print(set_string_colored('DP Check : function: visit_tree is invoked', Color.GREEN.value))
             print(set_string_colored("DP Check : " + str(ast), Color.GREEN.value))
@@ -212,16 +213,21 @@ class ASTParser():
         if ast is None:
             return
 
+        # DP DEBUG:
+        # if pIndex != -1:
+            # print(pIndex)
+
         if ast[0] in stmtList:
-            self.visit_statments(ast, parent)
+            self.visit_statments(ast, pIndex)
         elif ast[0] in actionList:
-            self.visit_actions(ast, parent)
+            self.visit_actions(ast, pIndex)
         else:
             cd = ConstData(ast, len(self.parsedNodes))
             constNode = ASTNode(cd, len(self.parsedNodes))
             self.parsedNodes.append(constNode)
+            # TODO : Have to remove this branch
 
-    def visit_statments(self, astBlock, parent):
+    def visit_statments(self, astBlock, pIndex):
         if self.isDebug:
             print(set_string_colored('DP Check : function: visit_statments is invoked', Color.GREEN.value))
             pprint(astBlock)
@@ -238,9 +244,10 @@ class ASTParser():
                 stmtNode = ASTNode(bs, blockStmtNodeIndex)
 
                 self.parsedNodes.append(stmtNode)
+                self.create_edges(pIndex, blockStmtNodeIndex, None)
 
                 for subTree in astBlock[2]:
-                    self.visit_tree(subTree)
+                    self.visit_tree(subTree, blockStmtNodeIndex)
             else:
                 self.print_parsing_error(10)
 
@@ -256,12 +263,13 @@ class ASTParser():
                 stmtNode = ASTNode(es, exprStmtNodeIndex)
 
                 self.parsedNodes.append(stmtNode)
+                self.create_edges(pIndex, exprStmtNodeIndex, None)
 
                 if type(astBlock[1][0]) == type(list()):
                     for subTree in astBlock[1]:
-                        self.visit_tree(subTree)
+                        self.visit_tree(subTree, exprStmtNodeIndex)
                 else :
-                    self.visit_tree(astBlock[1])
+                    self.visit_tree(astBlock[1], exprStmtNodeIndex)
             else:
                 self.print_parsing_error(20)
 
@@ -278,18 +286,20 @@ class ASTParser():
                 stmtNode = ASTNode(lds, localDeclStmtNodeIndex)
 
                 self.parsedNodes.append(stmtNode)
+                self.create_edges(pIndex, localDeclStmtNodeIndex, None)
 
                 if type(astBlock[1][0]) == type(list()):
                     for subTree in astBlock[1]:
-                        self.visit_tree(subTree)
+                        self.visit_tree(subTree, localDeclStmtNodeIndex)
                 else :
-                    self.visit_tree(astBlock[1])
+                    self.visit_tree(astBlock[1], localDeclStmtNodeIndex)
             else:
                 # CHECK: In usual, this case, astBlock[1] is None
                 lds = LocalDeclarationStatement(stmt)
                 stmtNode = ASTNode(lds, localDeclStmtNodeIndex)
 
                 self.parsedNodes.append(stmtNode)
+                self.create_edges(pIndex, localDeclStmtNodeIndex, None)
 
             # Branch for decl
             if type(astBlock[2]) == type(list()):
@@ -302,12 +312,13 @@ class ASTParser():
                     stmtNode = ASTNode(lds, localDeclStmtNodeIndex)
 
                     self.parsedNodes.append(stmtNode)
+                    self.create_edges(pIndex, localDeclStmtNodeIndex, None)
 
                 if type(astBlock[2][0]) == type(list()):
                     for subTree in astBlock[2]:
-                        self.visit_tree(subTree)
+                        self.visit_tree(subTree, localDeclStmtNodeIndex)
                 else :
-                    self.visit_tree(astBlock[2])
+                    self.visit_tree(astBlock[2], localDeclStmtNodeIndex)
             else:
                 self.print_parsing_error(30)
 
@@ -323,12 +334,13 @@ class ASTParser():
                 stmtNode = ASTNode(rs, returnStmtNodeIndex)
 
                 self.parsedNodes.append(stmtNode)
+                self.create_edges(pIndex, returnStmtNodeIndex, None)
 
                 if type(astBlock[1][0]) == type(list()):
                     for subTree in astBlock[1]:
-                        self.visit_tree(subTree)
+                        self.visit_tree(subTree, returnStmtNodeIndex)
                 else :
-                    self.visit_tree(astBlock[1])
+                    self.visit_tree(astBlock[1], returnStmtNodeIndex)
             else:
                 # CHECK: In usual, this case, astBlock[1] is None
                 # self.print_parsing_error(40)
@@ -336,6 +348,7 @@ class ASTParser():
                 stmtNode = ASTNode(rs, returnStmtNodeIndex)
 
                 self.parsedNodes.append(stmtNode)
+                self.create_edges(pIndex, returnStmtNodeIndex, None)
 
         elif astBlock[0] == 'ThrowStatement':
             stmt = copy_instance(astBlock)
@@ -349,12 +362,13 @@ class ASTParser():
                 stmtNode = ASTNode(ts, throwStmtNodeIndex)
 
                 self.parsedNodes.append(stmtNode)
+                self.create_edges(pIndex, throwStmtNodeIndex, None)
 
                 if type(astBlock[1][0]) == type(list()):
                     for subTree in astBlock[1]:
-                        self.visit_tree(subTree)
+                        self.visit_tree(subTree, throwStmtNodeIndex)
                 else :
-                    self.visit_tree(astBlock[1])
+                    self.visit_tree(astBlock[1], throwStmtNodeIndex)
             else:
                 self.print_parsing_error(50)
 
@@ -367,6 +381,7 @@ class ASTParser():
             stmtNode = ASTNode(js, jmpStmtNodeIndex)
 
             self.parsedNodes.append(stmtNode)
+            self.create_edges(pIndex, jmpStmtNodeIndex, None)
 
             #TODO : Add a routine that prevent crash or wrong behaviors
             # Blah Blah Blah Blah Blah Blah
@@ -385,12 +400,13 @@ class ASTParser():
                 stmtNode = ASTNode(ds, doStmtNodeIndex)
 
                 self.parsedNodes.append(stmtNode)
+                self.create_edges(pIndex, doStmtNodeIndex, None)
 
                 if type(astBlock[2][0]) == type(list()):
                     for subTree in astBlock[2]:
-                        self.visit_tree(subTree)
+                        self.visit_tree(subTree, doStmtNodeIndex)
                 else :
-                    self.visit_tree(astBlock[2])
+                    self.visit_tree(astBlock[2], doStmtNodeIndex)
             else:
                 self.print_parsing_error(70)
 
@@ -405,12 +421,13 @@ class ASTParser():
                     stmtNode = ASTNode(ds, doStmtNodeIndex)
 
                     self.parsedNodes.append(stmtNode)
+                    self.create_edges(pIndex, doStmtNodeIndex, None)
 
                 if type(astBlock[3][0]) == type(list()):
                     for subTree in astBlock[3]:
-                        self.visit_tree(subTree)
+                        self.visit_tree(subTree, doStmtNodeIndex)
                 else :
-                    self.visit_tree(astBlock[3])
+                    self.visit_tree(astBlock[3], doStmtNodeIndex)
             else:
                 self.print_parsing_error(71)
 
@@ -427,12 +444,13 @@ class ASTParser():
                 stmtNode = ASTNode(ws, whileStmtNodeIndex)
 
                 self.parsedNodes.append(stmtNode)
+                self.create_edges(pIndex, whileStmtNodeIndex, None)
 
                 if type(astBlock[2][0]) == type(list()):
                     for subTree in astBlock[2]:
-                        self.visit_tree(subTree)
+                        self.visit_tree(subTree, whileStmtNodeIndex)
                 else :
-                    self.visit_tree(astBlock[2])
+                    self.visit_tree(astBlock[2], whileStmtNodeIndex)
             else:
                 self.print_parsing_error(80)
 
@@ -447,12 +465,13 @@ class ASTParser():
                     stmtNode = ASTNode(ws, whileStmtNodeIndex)
 
                     self.parsedNodes.append(stmtNode)
+                    self.create_edges(pIndex, whileStmtNodeIndex, None)
 
                 if type(astBlock[3][0]) == type(list()):
                     for subTree in astBlock[3]:
-                        self.visit_tree(subTree)
+                        self.visit_tree(subTree, whileStmtNodeIndex)
                 else :
-                    self.visit_tree(astBlock[3])
+                    self.visit_tree(astBlock[3], whileStmtNodeIndex)
             else:
                 self.print_parsing_error(81)
 
@@ -470,12 +489,13 @@ class ASTParser():
                 stmtNode = ASTNode(ts, tryStmtNodeIndex)
 
                 self.parsedNodes.append(stmtNode)
+                self.create_edges(pIndex, tryStmtNodeIndex, None)
 
                 if type(astBlock[2][0]) == type(list()):
                     for subTree in astBlock[2]:
-                        self.visit_tree(subTree)
+                        self.visit_tree(subTree, tryStmtNodeIndex)
                 else :
-                    self.visit_tree(astBlock[2])
+                    self.visit_tree(astBlock[2], tryStmtNodeIndex)
             else:
                 self.print_parsing_error(90)
 
@@ -491,12 +511,13 @@ class ASTParser():
                     stmtNode = ASTNode(ts, tryStmtNodeIndex)
 
                     self.parsedNodes.append(stmtNode)
+                    self.create_edges(pIndex, tryStmtNodeIndex, None)
 
                 # Visit the pair formed expr for parsing the AST
                 if astBlock[3] is None:
                     self.print_parsing_error(92)
                 else:
-                    self.visit_pairs(astBlock[3])
+                    self.visit_pairs(astBlock[3], pIndex)
             else:
                 self.print_parsing_error(91)
 
@@ -513,12 +534,13 @@ class ASTParser():
                 stmtNode = ASTNode(ifs, ifStmtNodeIndex)
 
                 self.parsedNodes.append(stmtNode)
+                self.create_edges(pIndex, ifStmtNodeIndex, None)
 
                 if type(astBlock[2][0]) == type(list()):
                     for subTree in astBlock[2]:
-                        self.visit_tree(subTree)
+                        self.visit_tree(subTree, ifStmtNodeIndex)
                 else :
-                    self.visit_tree(astBlock[2])
+                    self.visit_tree(astBlock[2], ifStmtNodeIndex)
             else:
                 self.print_parsing_error(100)
 
@@ -533,12 +555,13 @@ class ASTParser():
                     stmtNode = ASTNode(ifs, ifStmtNodeIndex)
 
                     self.parsedNodes.append(stmtNode)
+                    self.create_edges(pIndex, ifStmtNodeIndex, None)
 
                 if type(astBlock[3][0]) == type(list()):
                     for subTree in astBlock[3]:
-                        self.visit_tree(subTree)
+                        self.visit_tree(subTree, ifStmtNodeIndex)
                 else :
-                    self.visit_tree(astBlock[3])
+                    self.visit_tree(astBlock[3], ifStmtNodeIndex)
             else:
                 self.print_parsing_error(101)
 
@@ -555,12 +578,13 @@ class ASTParser():
                 stmtNode = ASTNode(ss, switchStmtNodeIndex)
 
                 self.parsedNodes.append(stmtNode)
+                self.create_edges(pIndex, switchStmtNodeIndex, None)
 
                 if type(astBlock[2][0]) == type(list()):
                     for subTree in astBlock[2]:
-                        self.visit_tree(subTree)
+                        self.visit_tree(subTree, switchStmtNodeIndex)
                 else :
-                    self.visit_tree(astBlock[2])
+                    self.visit_tree(astBlock[2], switchStmtNodeIndex)
             else:
                 self.print_parsing_error(110)
 
@@ -576,18 +600,19 @@ class ASTParser():
                     stmtNode = ASTNode(ss, switchStmtNodeIndex)
 
                     self.parsedNodes.append(stmtNode)
+                    self.create_edges(pIndex, switchStmtNodeIndex, None)
 
                 if astBlock[3] is None:
                     self.print_parsing_error(112)
                 else:
-                    self.visit_pairs(astBlock[3])
+                    self.visit_pairs(astBlock[3], pIndex)
             else:
                 self.print_parsing_error(111)
 
         else:
             self.print_parsing_error(-1)
 
-    def visit_actions(self, astBlock, parent):
+    def visit_actions(self, astBlock, pIndex):
         if self.isDebug:
             print(set_string_colored('DP Check : function: visit_actions is invoked', Color.GREEN.value))
             pprint(astBlock)
@@ -605,12 +630,13 @@ class ASTParser():
                 actionNode = ASTNode(arrayAccessAction, arrAccessNodeIndex)
 
                 self.parsedNodes.append(actionNode)
+                self.create_edges(pIndex, arrAccessNodeIndex, None)
 
                 if type(astBlock[1][0][0]) == type(list()):
                     for subTree in astBlock[1][0]:
-                        self.visit_tree(subTree)
+                        self.visit_tree(subTree, arrAccessNodeIndex)
                 else :
-                    self.visit_tree(astBlock[1][0])
+                    self.visit_tree(astBlock[1][0], arrAccessNodeIndex)
             else:
                 self.print_parsing_error(1010)
 
@@ -625,12 +651,13 @@ class ASTParser():
                     actionNode = ASTNode(arrayAccessAction, arrAccessNodeIndex)
 
                     self.parsedNodes.append(actionNode)
+                    self.create_edges(pIndex, arrAccessNodeIndex, None)
 
                     if type(astBlock[1][1][0]) == type(list()):
                         for subTree in astBlock[1][1]:
-                           self.visit_tree(subTree)
+                           self.visit_tree(subTree, arrAccessNodeIndex)
                     else :
-                        self.visit_tree(astBlock[1][1])
+                        self.visit_tree(astBlock[1][1], arrAccessNodeIndex)
             else:
                 self.print_parsing_error(1011)
 
@@ -647,12 +674,13 @@ class ASTParser():
                 actionNode = ASTNode(arrayCreationAction, arrCreationNodeIndex)
 
                 self.parsedNodes.append(actionNode)
+                self.create_edges(pIndex, arrCreationNodeIndex, None)
 
                 if type(astBlock[1][0]) == type(list()):
                     for subTree in astBlock[1]:
-                        self.visit_tree(subTree)
+                        self.visit_tree(subTree, arrCreationNodeIndex)
                 else :
-                    self.visit_tree(astBlock[1])
+                    self.visit_tree(astBlock[1], arrCreationNodeIndex)
             else:
                 self.print_parsing_error(1020)
 
@@ -667,12 +695,13 @@ class ASTParser():
                     actionNode = ASTNode(arrayCreationAction, arrCreationNodeIndex)
 
                     self.parsedNodes.append(actionNode)
+                    self.create_edges(pIndex, arrCreationNodeIndex, None)
 
                     if type(astBlock[2][0]) == type(list()):
                         for subTree in astBlock[2]:
-                            self.visit_tree(subTree)
+                            self.visit_tree(subTree, arrCreationNodeIndex)
                     else :
-                        self.visit_tree(astBlock[2])
+                        self.visit_tree(astBlock[2], arrCreationNodeIndex)
             else:
                 # In this case, dim is just a const value like 1
                 pass
@@ -690,12 +719,13 @@ class ASTParser():
                 actionNode = ASTNode(arrayInitializerAction, arrInitializerNodeIndex)
 
                 self.parsedNodes.append(actionNode)
+                self.create_edges(pIndex, arrInitializerNodeIndex, None)
 
                 if type(astBlock[1][0]) == type(list()):
                     for subTree in astBlock[1]:
-                        self.visit_tree(subTree)
+                        self.visit_tree(subTree, arrInitializerNodeIndex)
                 else :
-                    self.visit_tree(astBlock[1])
+                    self.visit_tree(astBlock[1], arrInitializerNodeIndex)
             else:
                 self.print_parsing_error(1030)
 
@@ -718,12 +748,13 @@ class ASTParser():
                 actionNode = ASTNode(assignAction, assignNodeIndex)
 
                 self.parsedNodes.append(actionNode)
+                self.create_edges(pIndex, assignNodeIndex, None)
 
                 if type(astBlock[1][0][0]) == type(list()):
                         for subTree in astBlock[1][0]:
-                           self.visit_tree(subTree)
+                           self.visit_tree(subTree, assignNodeIndex)
                 else:
-                    self.visit_tree(astBlock[1][0])
+                    self.visit_tree(astBlock[1][0], assignNodeIndex)
             else:
                 self.print_parsing_error(1040)
 
@@ -738,12 +769,13 @@ class ASTParser():
                     actionNode = ASTNode(assignAction, assignNodeIndex)
 
                     self.parsedNodes.append(actionNode)
+                    self.create_edges(pIndex, assignNodeIndex, None)
 
                     if type(astBlock[1][1][0]) == type(list()):
                         for subTree in astBlock[1][1]:
-                           self.visit_tree(subTree)
+                           self.visit_tree(subTree, assignNodeIndex)
                     else :
-                        self.visit_tree(astBlock[1][1])
+                        self.visit_tree(astBlock[1][1], assignNodeIndex)
             else:
                 self.print_parsing_error(1041)
 
@@ -764,12 +796,13 @@ class ASTParser():
                 actionNode = ASTNode(binaryInfixAction, binInfixNodeIndex)
 
                 self.parsedNodes.append(actionNode)
+                self.create_edges(pIndex, binInfixNodeIndex, None)
 
                 if type(astBlock[1][0][0]) == type(list()):
                         for subTree in astBlock[1][0]:
-                           self.visit_tree(subTree)
+                           self.visit_tree(subTree, binInfixNodeIndex)
                 else :
-                    self.visit_tree(astBlock[1][0])
+                    self.visit_tree(astBlock[1][0], binInfixNodeIndex)
             else:
                 self.print_parsing_error(1050)
 
@@ -784,12 +817,14 @@ class ASTParser():
                     actionNode = ASTNode(binaryInfixAction, binInfixNodeIndex)
 
                     self.parsedNodes.append(actionNode)
+                    self.create_edges(pIndex, binInfixNodeIndex, None)
+
 
                     if type(astBlock[1][1][0]) == type(list()):
                         for subTree in astBlock[1][1]:
-                           self.visit_tree(subTree)
+                           self.visit_tree(subTree, binInfixNodeIndex)
                     else :
-                        self.visit_tree(astBlock[1][1])
+                        self.visit_tree(astBlock[1][1], binInfixNodeIndex)
             else:
                 self.print_parsing_error(1051)
 
@@ -810,12 +845,13 @@ class ASTParser():
                 actionNode = ASTNode(castAction, castNodeIndex)
 
                 self.parsedNodes.append(actionNode)
+                self.create_edges(pIndex, castNodeIndex, None)
 
                 if type(astBlock[1][0][0]) == type(list()):
                         for subTree in astBlock[1][0]:
-                           self.visit_tree(subTree)
+                           self.visit_tree(subTree, castNodeIndex)
                 else :
-                    self.visit_tree(astBlock[1][0])
+                    self.visit_tree(astBlock[1][0], castNodeIndex)
             else:
                 self.print_parsing_error(1060)
 
@@ -830,12 +866,13 @@ class ASTParser():
                     actionNode = ASTNode(castAction, castNodeIndex)
 
                     self.parsedNodes.append(actionNode)
+                    self.create_edges(pIndex, castNodeIndex, None)
 
                     if type(astBlock[1][1][0]) == type(list()):
                         for subTree in astBlock[1][1]:
-                           self.visit_tree(subTree)
+                           self.visit_tree(subTree, castNodeIndex)
                     else :
-                        self.visit_tree(astBlock[1][1])
+                        self.visit_tree(astBlock[1][1], castNodeIndex)
             else:
                 self.print_parsing_error(1061)
 
@@ -852,9 +889,10 @@ class ASTParser():
                 actionNode = ASTNode(fieldAccessAction, fieldAccessNodeIndex)
 
                 self.parsedNodes.append(actionNode)
+                self.create_edges(pIndex, fieldAccessNodeIndex, None)
 
                 for subTree in astBlock[1]:
-                    self.visit_tree(subTree)
+                    self.visit_tree(subTree, fieldAccessNodeIndex)
 
             else:
                 self.print_parsing_error(1070)
@@ -872,18 +910,20 @@ class ASTParser():
                 actionNode = ASTNode(literalAction, literalNodeIndex)
 
                 self.parsedNodes.append(actionNode)
+                self.create_edges(pIndex, literalNodeIndex, None)
 
                 if type(astBlock[1][0]) == type(list()):
                     for subTree in astBlock[1]:
-                        self.visit_tree(subTree)
+                        self.visit_tree(subTree, literalNodeIndex)
                 else :
-                    self.visit_tree(astBlock[1])
+                    self.visit_tree(astBlock[1], literalNodeIndex)
 
             else:
                 literalAction = Literal(action)
                 actionNode = ASTNode(literalAction, literalNodeIndex)
 
                 self.parsedNodes.append(actionNode)
+                self.create_edges(pIndex, literalNodeIndex, None)
 
             # Branch for tt
             if type(astBlock[2]) == type(list()):
@@ -903,6 +943,7 @@ class ASTParser():
             actionNode = ASTNode(LocalAction, localNodeIndex)
 
             self.parsedNodes.append(actionNode)
+            self.create_edges(pIndex, localNodeIndex, None)
 
         elif astBlock[0] == 'MethodInvocation':
             action = copy_instance(astBlock)
@@ -923,12 +964,13 @@ class ASTParser():
                 actionNode = ASTNode(methodInvocationAction, methodInvocationNodeIndex)
 
                 self.parsedNodes.append(actionNode)
+                self.create_edges(pIndex, methodInvocationNodeIndex, None)
 
                 if type(astBlock[1][0]) == type(list()):
                     for subTree in astBlock[1]:
-                        self.visit_tree(subTree)
+                        self.visit_tree(subTree, methodInvocationNodeIndex)
                 else :
-                    self.visit_tree(astBlock[1])
+                    self.visit_tree(astBlock[1], methodInvocationNodeIndex)
             else:
                 self.print_parsing_error(1100)
 
@@ -945,12 +987,13 @@ class ASTParser():
                 actionNode = ASTNode(parenthesisAction, parenthesisNodeIndex)
 
                 self.parsedNodes.append(actionNode)
+                self.create_edges(pIndex, parenthesisNodeIndex, None)
 
                 if type(astBlock[1][0]) == type(list()):
                     for subTree in astBlock[1]:
-                        self.visit_tree(subTree)
+                        self.visit_tree(subTree, parenthesisNodeIndex)
                 else :
-                    self.visit_tree(astBlock[1])
+                    self.visit_tree(astBlock[1], parenthesisNodeIndex)
             else:
                 self.print_parsing_error(1110)
 
@@ -967,6 +1010,7 @@ class ASTParser():
             actionNode = ASTNode(typenameAction, typeNameNodeIndex)
 
             self.parsedNodes.append(actionNode)
+            self.create_edges(pIndex, typeNameNodeIndex, None)
 
         elif astBlock[0] == 'Unary':
             action = copy_instance(astBlock)
@@ -981,12 +1025,13 @@ class ASTParser():
                 actionNode = ASTNode(unaryAction, UnaryNodeIndex)
 
                 self.parsedNodes.append(actionNode)
+                self.create_edges(pIndex, UnaryNodeIndex, None)
 
                 if type(astBlock[1][0]) == type(list()):
                     for subTree in astBlock[1]:
-                        self.visit_tree(subTree)
+                        self.visit_tree(subTree, UnaryNodeIndex)
                 else :
-                    self.visit_tree(astBlock[1])
+                    self.visit_tree(astBlock[1], UnaryNodeIndex)
             else:
                 self.print_parsing_error(1130)
 
@@ -1022,12 +1067,13 @@ class ASTParser():
                         actionNode = ASTNode(dummyAction, dummyNodeIndex)
 
                         self.parsedNodes.append(actionNode)
+                        self.create_edges(pIndex, dummyNodeIndex, None)
 
                         if type(astBlock[1][1][0]) == type(list()):
                             for subTree in astBlock[1][1]:
-                                self.visit_tree(subTree)
+                                self.visit_tree(subTree, dummyNodeIndex)
                         else :
-                            self.visit_tree(astBlock[1][1])
+                            self.visit_tree(astBlock[1][1], dummyNodeIndex)
                     else:
                         self.print_parsing_error(1145)
                         print(astBlock[1][1])
@@ -1057,12 +1103,13 @@ class ASTParser():
                 actionNode = ASTNode(classInstanceCreationAction, clsInstanceCreationNodeIndex)
 
                 self.parsedNodes.append(actionNode)
+                self.create_edges(pIndex, clsInstanceCreationNodeIndex, None)
 
                 if type(astBlock[2][0]) == type(list()):
                     for subTree in astBlock[2]:
-                        self.visit_tree(subTree)
+                        self.visit_tree(subTree, clsInstanceCreationNodeIndex)
                 else :
-                    self.visit_tree(astBlock[2])
+                    self.visit_tree(astBlock[2], clsInstanceCreationNodeIndex)
             else:
                 self.print_parsing_error(1150)
                 print(astBlock)
@@ -1078,12 +1125,13 @@ class ASTParser():
                     actionNode = ASTNode(classInstanceCreationAction, clsInstanceCreationNodeIndex)
 
                     self.parsedNodes.append(actionNode)
+                    self.create_edges(pIndex, clsInstanceCreationNodeIndex, None)
 
                     if type(astBlock[3][0]) == type(list()):
                         for subTree in astBlock[3]:
-                           self.visit_tree(subTree)
+                           self.visit_tree(subTree, clsInstanceCreationNodeIndex)
                     else :
-                        self.visit_tree(astBlock[3])
+                        self.visit_tree(astBlock[3], clsInstanceCreationNodeIndex)
             else:
                 self.print_parsing_error(1151)
 
@@ -1091,7 +1139,7 @@ class ASTParser():
             self.print_parsing_error(-2)
             print(astBlock)
 
-    def visit_pairs(self, tupleList):
+    def visit_pairs(self, tupleList, pIndex):
         if self.isDebug:
             print(set_string_colored('DP Check : function: visit_pairs is invoked', Color.GREEN.value))
             pprint(tupleList)
@@ -1100,19 +1148,30 @@ class ASTParser():
             for t in pairTuple:
                 if type(t[0]) == type(list()):
                     for subTree in t:
-                        self.visit_tree(subTree)
+                        self.visit_tree(subTree, pIndex)
                 else :
-                    self.visit_tree(t)
+                    self.visit_tree(t, pIndex)
 
-    def create_edges(self, pIndex, cIndex, type):
-        if cIndex != 0:
-            if pIndex != -1:
-                ast_edge = ASTEdge(pIndex, cIndex, type)
+    def create_edges(self, pIndex, cIndex, edge_type):
+        if self.isDebug:
+            print(set_string_colored('DP Check : ' + str(pIndex, cIndex), Color.GREEN.value))
+            print(set_string_colored('DP Check : ' + str(self.parsedNodes[cIndex].nodeInfo), Color.GREEN.value))
 
+        if self.entryFlag:
+            if pIndex == -1 and cIndex == 0:
+                ast_edge = ASTEdge(pIndex, cIndex, edge_type)
                 self.parsedEdges.append(ast_edge)
+
+                self.entryFlag = False
             else:
                 self.print_parsing_error(-3)
-
+        else:
+            if pIndex == -1 or cIndex == 0:
+                self.print_parsing_error(-3)
+            else:
+                ast_edge = ASTEdge(pIndex, cIndex, edge_type)
+                self.parsedEdges.append(ast_edge)
+            
     def show_whole_ast(self):
         if self.ast:
             pprint(self.ast)
@@ -1132,6 +1191,13 @@ class ASTEdge():
         self.pIndex = pIndex
         self.cIndex = cIndex
         self.type = ''
+
+    def __repr__(self):
+        return(
+            'pIndex: ' + str(self.pIndex)
+            + ' / cIndex: ' + str(self.cIndex)
+            + ' / type: ' + str(self.type)
+            )
 
 # Class for const Node
 class ConstData():
