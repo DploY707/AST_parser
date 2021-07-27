@@ -1,6 +1,7 @@
 class Statement():
     def __init__(self, stmtInfo):
         self.stmtInfo = stmtInfo
+        self.type = stmtInfo[0]
 
     def __repr__(self):
         return str(self.stmtInfo)

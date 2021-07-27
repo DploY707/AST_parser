@@ -27,6 +27,18 @@ def set_string_colored(printStr, colorVal):
 
     return coloredStr
 
+def get_filteredFileList_from_directory(targetDir, extList):
+
+    fileList = list()
+
+    for dirPath, subDirPath, files in os.walk(targetDir):
+        for file in files:
+            ext = os.path.splitext(file)[-1]
+
+            if ext in extList:
+                fileList.append(os.path.join(dirPath, file))
+
+    return fileList
 
 def get_fileList_in_directory(dirPath):
     return os.listdir(dirPath)

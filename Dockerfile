@@ -22,6 +22,13 @@ RUN \
     pip3 install setuptools &&\
     python3 ./setup.py install
 
+# Install pygraphviz
+RUN \
+    apt-get update -y &&\
+    apt-get install python3.8-dev -y &&\
+    apt-get install graphviz graphviz-dev -y &&\
+    pip3 install pygraphviz
+
 # Set projects directories
 USER root
 WORKDIR /root
@@ -35,4 +42,4 @@ ENV LC_ALL C.UTF-8
 ENV LANG C.UTF-8
 
 WORKDIR /root/workDir/ASTParser
-# CMD ["python3","parser_main.py"]
+CMD ["python3","parser_main.py"]

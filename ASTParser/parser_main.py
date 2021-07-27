@@ -8,16 +8,22 @@ from androguard.decompiler.dad.decompile import DvMethod
 from androguard.misc import AnalyzeAPK
 
 from core.parser import ASTParser
-from core.statements import Statement
+from core.parser import ConstData # This class will be removed
 
-from core.parser import ConstData
+from core.statements import Statement
 
 from core.graph import ASTGraph
 
+from core.utils import save_pickle, load_pickle
+from core.utils import get_filteredFileList_from_directory as get_targets
+
 import networkx as nx
 
-targetPath = 'data/okhttp-3.1.0_dex.jar'
-resultPath = './out.pickle'
+targetPath = 'data/'
+target = 'data/okhttp-3.1.0_dex.jar'
+resultPath = '/root/result/'
+
+targetExts = ['.apk', '.jar']
 
 def create_ast(method):
     if method.is_external():
@@ -32,28 +38,37 @@ def create_ast(method):
         print('ERROR : in creat_ast()')
 
 if __name__ == '__main__' :
-    a, d, dx = AnalyzeAPK(targetPath)
+    targetList = get_targets(targetPath, targetExts)
 
-    t_count = 0
+    for target in targetList:
+        a, d, dx = AnalyzeAPK(target)
 
-    for method in dx.get_methods():
-        m_ast = create_ast(method)
+        t_count = 0
 
-        ap = ASTParser()
-        
-        if m_ast is not None:
-            ap.load_ast(m_ast)
-            ap.parse_ast()
+        graphList = list()
 
-            # for node in ap.parsedNodes:
-                # pprint(node.nodeInfo)
+        for method in dx.get_methods():
+            m_ast = create_ast(method)
 
-            # for edge in ap.parsedEdges:
-                # pprint(edge)
+            ap = ASTParser()
+            
+            if m_ast is not None:
+                ap.load_ast(m_ast)
+                ap.parse_ast()
 
-        ag = ASTGraph(ap.parsedNodes, ap.parsedEdges)
-        ag.graph_initialize()
+                # for node in ap.parsedNodes:
+                    # pprint(node.nodeInfo)
 
-        ag.save_graph_png('./' + str(ap).split(' ')[-1] + '.png')
+                # for edge in ap.parsedEdges:
+                    # pprint(edge)
 
-        break
+            ag = ASTGraph(ap.parsedNodes, ap.parsedEdges)
+            ag.graph_initialize()
+
+            if ag.graph == None:
+                pass
+            else:
+                graphList.append(ag.graph)
+
+    save_pickle(resultPath + target.split('/')[1] + '.pickle', graphList)
+

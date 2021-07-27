@@ -10,17 +10,27 @@ class ASTGraph():
 	def graph_initialize(self):
 		self.graph = nx.Graph()
 
-		for node in self.nodeList:
-			self.graph.add_node(node)
+		# for node in self.nodeList:
+			# self.graph.add_node(node)
+
+		for edge in self.edgeList:
+			if edge.pIndex == -1:
+				self.graph.add_edge(
+					str(edge.pIndex) + ':' + 'ROOT'
+					, str(edge.cIndex) + ':' + self.nodeList[edge.cIndex].nodeInfo.type)
+			else:
+				self.graph.add_edge(
+					str(edge.pIndex) + ':' + self.nodeList[edge.pIndex].nodeInfo.type
+					, str(edge.cIndex) + ':' + self.nodeList[edge.cIndex].nodeInfo.type)
 
 	def draw_graph(self):
-		nx.draw(self.graph, with_labels = True)
+		nx.draw(self.graph, pos=nx.drawing.nx_agraph.graphviz_layout(self.graph, prog='dot'),  with_labels=True)
 		print(nx.info(self.graph))
 
-	def save_graph_png(self, savePath):
+	def save_graph_as_png(self, savePath):
 		plt.figure()
 
-		self.draw_graph
+		self.draw_graph()
 
 		plt.axis('off')
 		plt.savefig('/')

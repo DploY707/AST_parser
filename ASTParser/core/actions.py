@@ -1,6 +1,7 @@
 class Action():
     def __init__(self, actionInfo):
         self.actionInfo = actionInfo
+        self.type = actionInfo[0]
 
     def __repr__(self):
         return str(self.actionInfo)

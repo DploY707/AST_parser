@@ -222,9 +222,10 @@ class ASTParser():
         elif ast[0] in actionList:
             self.visit_actions(ast, pIndex)
         else:
-            cd = ConstData(ast, len(self.parsedNodes))
-            constNode = ASTNode(cd, len(self.parsedNodes))
-            self.parsedNodes.append(constNode)
+            pass
+            # cd = ConstData(ast, len(self.parsedNodes))
+            # constNode = ASTNode(cd, len(self.parsedNodes))
+            # self.parsedNodes.append(constNode)
             # TODO : Have to remove this branch
 
     def visit_statments(self, astBlock, pIndex):
