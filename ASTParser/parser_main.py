@@ -8,7 +8,7 @@ from androguard.decompiler.dad.decompile import DvMethod
 from androguard.misc import AnalyzeAPK
 
 from core.parser import ASTParser
-from core.parser import ConstData # This class will be removed
+from core.parser import ConstValueNode
 
 from core.statements import Statement
 

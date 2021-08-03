@@ -1,6 +1,8 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 
+from core.parser import ConstValueNode
+
 class ASTGraph():
 	def __init__(self, nodeList, edgeList):
 		self.nodeList = nodeList
@@ -19,9 +21,14 @@ class ASTGraph():
 					str(edge.pIndex) + ':' + 'ROOT'
 					, str(edge.cIndex) + ':' + self.nodeList[edge.cIndex].nodeInfo.type)
 			else:
-				self.graph.add_edge(
-					str(edge.pIndex) + ':' + self.nodeList[edge.pIndex].nodeInfo.type
-					, str(edge.cIndex) + ':' + self.nodeList[edge.cIndex].nodeInfo.type)
+				if type(self.nodeList[edge.cIndex]) != type(ConstValueNode(None, None)):
+					self.graph.add_edge(
+						str(edge.pIndex) + ':' + self.nodeList[edge.pIndex].nodeInfo.type
+						, str(edge.cIndex) + ':' + self.nodeList[edge.cIndex].nodeInfo.type)
+				else:
+					self.graph.add_edge(
+						str(edge.pIndex) + ':' + self.nodeList[edge.pIndex].nodeInfo.type
+						, str(edge.cIndex) + ':' + self.nodeList[edge.cIndex].nodeInfo)
 
 	def draw_graph(self):
 		nx.draw(self.graph, pos=nx.drawing.nx_agraph.graphviz_layout(self.graph, prog='dot'),  with_labels=True)
