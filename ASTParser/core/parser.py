@@ -85,6 +85,8 @@ class ASTParser():
             self.errMsg = 'ERR_NO(-2): AST has wrong action data'
         elif errorType == -3:
             self.errMsg = 'ERR_NO(-3): Invalied node index value is used on connecting edges'
+        elif errorType == -4:
+            self.errMsg = 'ERR_NO(-4): Unexpected ConstNode is created'
 
         # Error that AST is not loaded
         elif errorType == 0:
@@ -222,11 +224,39 @@ class ASTParser():
         elif ast[0] in actionList:
             self.visit_actions(ast, pIndex)
         else:
-            pass
-            # cd = ConstData(ast, len(self.parsedNodes))
-            # constNode = ASTNode(cd, len(self.parsedNodes))
-            # self.parsedNodes.append(constNode)
-            # TODO : Have to remove this branch
+            if self.parsedNodes[pIndex].nodeInfo.type == 'BlockStatement':
+                # In this case, the elemnets in the ast should be a value not a list!!!
+                constValueNodeIndex = len(self.parsedNodes)
+
+                if type(ast) != type(list()):
+                    self.print_parsing_error(-4)
+                    return
+
+                for const_value in ast:
+                    cvNode = ConstValueNode(str(const_value), constValueNodeIndex)
+
+                    self.parsedNodes.append(cvNode)
+                    self.create_edges(pIndex, constValueNodeIndex, None)
+
+                    constValueNodeIndex += 1
+
+            elif self.parsedNodes[pIndex].nodeInfo.type == 'ClassInstanceCreation':
+                # In this case, the const_value is 'void'
+                const_value = ast
+
+                if 'void' not in ast:
+                    self.print_parsing_error(-4)
+                    return
+
+                constValueNodeIndex = len(self.parsedNodes)
+
+                cvNode = ConstValueNode(str(const_value), constValueNodeIndex)
+
+                self.parsedNodes.append(cvNode)
+                self.create_edges(pIndex, constValueNodeIndex, None)
+
+            else:
+                self.print_parsing_error(-4)
 
     def visit_statments(self, astBlock, pIndex):
         if self.isDebug:
@@ -235,6 +265,11 @@ class ASTParser():
 
         if astBlock[0] == 'BlockStatement':
             stmt = copy_instance(astBlock)
+
+            # DP DEBUG ARB
+            if len(astBlock[2]) == 0:
+                empty_list = ['EMPTY']
+                astBlock[2].append(empty_list)
 
             blockStmtNodeIndex = len(self.parsedNodes)
 
@@ -1186,6 +1221,12 @@ class ASTNode():
         self.nodeInfo = data
         self.index = index
 
+# Class for parsed node of AST on value (not a statement, and not an action)
+class ConstValueNode():
+    def __init__(self, data, index):
+        self.nodeInfo = data
+        self.index = index
+
 # Class for managing the edge information among the parsedNodes of AST
 class ASTEdge():
     def __init__(self, pIndex, cIndex, type):
@@ -1199,9 +1240,3 @@ class ASTEdge():
             + ' / cIndex: ' + str(self.cIndex)
             + ' / type: ' + str(self.type)
             )
-
-# Class for const Node
-class ConstData():
-    def __init__(self, data, index):
-        self.data = data
-        self.index = index
