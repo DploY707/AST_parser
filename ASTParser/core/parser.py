@@ -341,7 +341,7 @@ class ASTParser():
             if type(astBlock[2]) == type(list()):
                 stmt[2] = 'extended'
 
-                if 'extended' in stmt:
+                if 'extended' in stmt.__repr__():
                     self.parsedNodes[localDeclStmtNodeIndex].nodeInfo.update_localDeclarationStatement(stmt)
                 else:
                     lds = LocalDeclarationStatement(stmt)
@@ -450,7 +450,7 @@ class ASTParser():
             if type(astBlock[3]) == type(list()):
                 stmt[3] = 'extended'
 
-                if 'extended' in stmt:
+                if 'extended' in stmt.__repr__():
                     self.parsedNodes[doStmtNodeIndex].nodeInfo.update_doStatement(stmt)
                 else:
                     ds = DoStatement(stmt)
@@ -494,7 +494,7 @@ class ASTParser():
             if type(astBlock[3]) == type(list()):
                 stmt[3] = 'extended'
 
-                if 'extended' in stmt:
+                if 'extended' in stmt.__repr__():
                     self.parsedNodes[whileStmtNodeIndex].nodeInfo.update_whileStatement(stmt)
                 else:
                     ws = WhileStatement(stmt)
@@ -540,7 +540,7 @@ class ASTParser():
                 stmt[3] = 'extended'
 
                 # Node Creation
-                if 'extended' in stmt:
+                if 'extended' in stmt.__repr__():
                     self.parsedNodes[tryStmtNodeIndex].nodeInfo.update_tryStatement(stmt)
                 else:
                     ts = TryStatement(stmt)
@@ -584,7 +584,7 @@ class ASTParser():
             if type(astBlock[3]) == type(list()):
                 stmt[3] = 'extended'
 
-                if 'extended' in stmt:
+                if 'extended' in stmt.__repr__():
                     self.parsedNodes[ifStmtNodeIndex].nodeInfo.update_ifStatement(stmt)
                 else:
                     ifs = IfStatement(stmt)
@@ -629,7 +629,7 @@ class ASTParser():
             if type(astBlock[3]) == type(list()):
                 stmt[3] = 'extended'
 
-                if 'extended' in stmt:
+                if 'extended' in stmt.__repr__():
                     self.parsedNodes[switchStmtNodeIndex].nodeInfo.update_switchStatement(stmt)
                 else:
                     ss = SwitchStatement(stmt)
@@ -680,7 +680,7 @@ class ASTParser():
             if type(astBlock[1][1]) == type(list()):
                 action[1][1] = 'extended'
 
-                if 'extended' in action:
+                if 'extended' in action.__repr__():
                     self.parsedNodes[arrAccessNodeIndex].nodeInfo.update_arrayAccess(action)
                 else:
                     arrayAccessAction = ArrayAccess(action)
@@ -724,7 +724,7 @@ class ASTParser():
             if type(astBlock[2]) == type(list()):
                 action[2] = 'extended'
 
-                if 'extended' in action:
+                if 'extended' in action.__repr__():
                     self.parsedNodes[arrCreationNodeIndex].nodeInfo.update_arrayCreation(action)
                 else:
                     arrayCreationAction = ArrayCreation(action)
@@ -798,7 +798,7 @@ class ASTParser():
             if type(astBlock[1][1]) == type(list()):
                 action[1][1] = 'extended'
 
-                if 'extended' in action:
+                if 'extended' in action.__repr__():
                     self.parsedNodes[assignNodeIndex].nodeInfo.update_assignment(action)
                 else:
                     assignAction = Assignment(action)
@@ -846,7 +846,7 @@ class ASTParser():
             if type(astBlock[1][1]) == type(list()):
                 action[1][1] = 'extended'
 
-                if 'extended' in action:
+                if 'extended' in action.__repr__():
                     self.parsedNodes[binInfixNodeIndex].nodeInfo.update_binaryInfix(action)
                 else:
                     binaryInfixAction = BinaryInfix(action)
@@ -895,7 +895,7 @@ class ASTParser():
             if type(astBlock[1][1]) == type(list()):
                 action[1][1] = 'extended'
 
-                if 'extended' in action:
+                if 'extended' in action.__repr__():
                     self.parsedNodes[castNodeIndex].nodeInfo.update_cast(action)
                 else:
                     castAction = Cast(action)
@@ -1154,7 +1154,7 @@ class ASTParser():
             if type(astBlock[3]) == type(list()):
                 action[3] = 'extended'
 
-                if 'extended' in action:
+                if 'extended' in action.__repr__():
                     self.parsedNodes[clsInstanceCreationNodeIndex].nodeInfo.update_classInstanceCreation(action)
                 else:
                     classInstanceCreationAction = ClassInstanceCreation(action)
