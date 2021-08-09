@@ -8,11 +8,12 @@ from androguard.decompiler.dad.decompile import DvMethod
 from androguard.misc import AnalyzeAPK
 
 from core.parser import ASTParser
-from core.parser import ConstValueNode
+from core.parser import ConstData
 
 from core.statements import Statement
 
 from core.graph import ASTGraph
+from core.graph import GraphConfig
 
 from core.utils import save_pickle, load_pickle
 from core.utils import get_filteredFileList_from_directory as get_targets
@@ -24,6 +25,8 @@ target = 'data/okhttp-3.1.0_dex.jar'
 resultPath = '/root/result/'
 
 targetExts = ['.apk', '.jar']
+
+config = GraphConfig(5000,10000)
 
 def create_ast(method):
     if method.is_external():
@@ -62,7 +65,7 @@ if __name__ == '__main__' :
                 # for edge in ap.parsedEdges:
                     # pprint(edge)
 
-            ag = ASTGraph(ap.parsedNodes, ap.parsedEdges)
+            ag = ASTGraph(ap.parsedNodes, ap.parsedEdges, config)
             ag.graph_initialize()
 
             if ag.graph == None:

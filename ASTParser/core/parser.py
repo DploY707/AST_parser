@@ -67,6 +67,9 @@ actionList = [
         'ClassInstanceCreation' # TODO: Analyze this case
         ]
 
+dataList = [
+        'CD'
+        ]
 
 class ASTParser():
     def __init__(self, flag = False):
@@ -233,9 +236,10 @@ class ASTParser():
                     return
 
                 for const_value in ast:
-                    cvNode = ConstValueNode(str(const_value), constValueNodeIndex)
+                    cd = ConstData(str(const_value), 'CD')
+                    constNode = ASTNode(cd, constValueNodeIndex)
 
-                    self.parsedNodes.append(cvNode)
+                    self.parsedNodes.append(constNode)
                     self.create_edges(pIndex, constValueNodeIndex, None)
 
                     constValueNodeIndex += 1
@@ -250,9 +254,10 @@ class ASTParser():
 
                 constValueNodeIndex = len(self.parsedNodes)
 
-                cvNode = ConstValueNode(str(const_value), constValueNodeIndex)
+                cd = ConstData(str(const_value), 'CD')
+                constNode = ASTNode(cd, constValueNodeIndex)
 
-                self.parsedNodes.append(cvNode)
+                self.parsedNodes.append(constNode)
                 self.create_edges(pIndex, constValueNodeIndex, None)
 
             else:
@@ -1222,10 +1227,13 @@ class ASTNode():
         self.index = index
 
 # Class for parsed node of AST on value (not a statement, and not an action)
-class ConstValueNode():
-    def __init__(self, data, index):
-        self.nodeInfo = data
-        self.index = index
+class ConstData():
+    def __init__(self, value, const_type):
+        self.type = const_type
+        self.value = value
+
+    def __repr__():
+        return self.value
 
 # Class for managing the edge information among the parsedNodes of AST
 class ASTEdge():
