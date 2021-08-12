@@ -240,6 +240,7 @@ class ASTParser():
 
                 if type(ast) != type(list()):
                     self.print_parsing_error(-4)
+                    print(set_string_colored(str(ast), Color.RED.value))
                     return
 
                 for const_value in ast:

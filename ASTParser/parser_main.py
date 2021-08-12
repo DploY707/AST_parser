@@ -86,5 +86,5 @@ if __name__ == '__main__' :
             else:
                 graphList.append(ag.graph)
 
-    save_pickle(resultPath + target.split('/')[1] + '.pickle', graphList)
+        save_pickle(resultPath + target.split('/')[1] + '.pickle', graphList)
 
