@@ -59,14 +59,14 @@ if __name__ == '__main__' :
                 ap.load_ast(m_ast)
                 ap.parse_ast()
                 
-                for node in ap.parsedNodes:
-                    if 'Assignment' == node.nodeInfo.type:
-                        if '[\'Assignment\', [\'extended\', \'extended\'], \'extended\']' == str(node.nodeInfo):
-                            pass
-                        elif '[\'ReturnStatement\', None]' == str(node.nodeInfo):
-                            pass
-                        else:
-                            pprint(node.nodeInfo)
+                # for node in ap.parsedNodes:
+                #     if 'Assignment' == node.nodeInfo.type:
+                #         if '[\'Assignment\', [\'extended\', \'extended\'], \'extended\']' == str(node.nodeInfo):
+                #             pass
+                #         elif '[\'ReturnStatement\', None]' == str(node.nodeInfo):
+                #             pass
+                #         else:
+                #             pprint(node.nodeInfo)
 
                 # for node in ap.parsedNodes:
                 #     if 'ArrayInitializer' == node.nodeInfo.type:
