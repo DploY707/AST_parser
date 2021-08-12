@@ -10,6 +10,10 @@ from androguard.misc import AnalyzeAPK
 from core.parser import ASTParser
 from core.parser import ConstData
 
+from core.parser import stmtList
+from core.parser import actionList
+from core.parser import dataList
+
 from core.statements import Statement
 
 from core.graph import ASTGraph
@@ -26,7 +30,7 @@ resultPath = '/root/result/'
 
 targetExts = ['.apk', '.jar']
 
-config = GraphConfig(5000,10000)
+config = GraphConfig(10000,20000)
 
 def create_ast(method):
     if method.is_external():
@@ -58,18 +62,9 @@ if __name__ == '__main__' :
             if m_ast is not None:
                 ap.load_ast(m_ast)
                 ap.parse_ast()
-                
-                # for node in ap.parsedNodes:
-                #     if 'Assignment' == node.nodeInfo.type:
-                #         if '[\'Assignment\', [\'extended\', \'extended\'], \'extended\']' == str(node.nodeInfo):
-                #             pass
-                #         elif '[\'ReturnStatement\', None]' == str(node.nodeInfo):
-                #             pass
-                #         else:
-                #             pprint(node.nodeInfo)
 
                 # for node in ap.parsedNodes:
-                #     if 'ArrayInitializer' == node.nodeInfo.type:
+                #     if 'APIName' == node.nodeInfo.type:
                 #         pprint(node.nodeInfo)
 
                 # for edge in ap.parsedEdges:
