@@ -18,11 +18,6 @@ class ArrayAccess(Action):
     def set_ind(self, expr):
         self.ind = expr
 
-    def update_arrayAccess(self, actionInfo):
-        self.actionInfo = actionInfo
-        self.set_arr(actionInfo[1][0])
-        self.set_ind(actionInfo[1][1])
-
 class ArrayCreation(Action):
     def __init__(self, actionInfo):
         super().__init__(actionInfo)
@@ -34,11 +29,6 @@ class ArrayCreation(Action):
 
     def set_dim(self, expr):
         self.dim = expr
-
-    def update_arrayCreation(self, actionInfo):
-        self.actionInfo = actionInfo
-        self.set_tn_and_params(actionInfo[1])
-        self.set_dim(actionInfo[2])
 
 class ArrayInitializer(Action):
     def __init__(self, actionInfo):
@@ -53,11 +43,6 @@ class ArrayInitializer(Action):
 
     def set_tn(self, tn):
         self.tn = tn
-
-    def update_arrayInitializer(self, actionInfo):
-        self.actionInfo = actionInfo
-        self.set_params(actionInfo[1])
-        self.set_tn(actionInfo[2])
 
 class Assignment(Action):
     def __init__(self, actionInfo):
@@ -75,12 +60,6 @@ class Assignment(Action):
     def set_op(self, expr):
         self.op = expr
 
-    def update_assignment(self, actionInfo):
-        self.actionInfo = actionInfo
-        self.set_lhs(actionInfo[1][0])
-        self.set_rhs(actionInfo[1][1])
-        self.set_op(actionInfo[2])
-
 class BinaryInfix(Action):
     def __init__(self, actionInfo):
         super().__init__(actionInfo)
@@ -97,13 +76,6 @@ class BinaryInfix(Action):
     def set_op(self, expr):
         self.op = expr
 
-    def update_binaryInfix(self, actionInfo):
-        self.actionInfo = actionInfo
-        self.set_left(actionInfo[1][0])
-        self.set_right(actionInfo[1][1])
-        self.set_op(actionInfo[2])
-
-
 class Cast(Action):
     def __init__(self, actionInfo):
         super().__init__(actionInfo)
@@ -116,16 +88,17 @@ class Cast(Action):
     def set_arg(self, expr):
         self.arg = expr
 
-    def update_cast(self, actionInfo):
-        self.actionInfo = actionInfo
-        self.set_tn(actionInfo[1][0])
-        self.set_arg(actionInfo[1][1])
-
 class FieldAccess(Action):
     def __init__(self, actionInfo):
         super().__init__(actionInfo)
         self.left_arr = actionInfo[1]
         self.triple = actionInfo[2]
+
+    def set_left_arr(self, left_arr):
+        self.left_arr = left_arr
+
+    def set_triple(self, triple):
+        self.triple = triple
 
 class Literal(Action):
     def __init__(self, actionInfo):
@@ -184,9 +157,3 @@ class ClassInstanceCreation(Action):
 
     def set_parse_descriptor(self, expr):
         self.parse_descriptor = expr
-
-    def update_classInstanceCreation(self, actionInfo):
-        self.actionInfo = actionInfo
-        self.set_triple(actionInfo[1])
-        self.set_params(actionInfo[2])
-        self.set_parse_descriptor(actionInfo[3])

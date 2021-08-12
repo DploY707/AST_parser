@@ -66,7 +66,7 @@ class ASTGraph():
 			return stmtList.index(nodeType) * self.config.TYPE_WINDOW_SIZE + index
 		elif nodeType in actionList:
 			return (actionList.index(nodeType) + 20) * self.config.TYPE_WINDOW_SIZE + index
-		elif nodeType in  dataList:
+		elif nodeType in dataList:
 			return (dataList.index(nodeType) + 40) * self.config.TYPE_WINDOW_SIZE + index
 		else:
 			print(set_string_colored('UNKNOWN TYPE NODE...', Color.RED.value))

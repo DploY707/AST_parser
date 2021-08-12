@@ -23,11 +23,6 @@ class LocalDeclarationStatement(Statement):
     def set_decl(self, expr):
         self.decl = expr
 
-    def update_localDeclarationStatement(self, stmtInfo):
-        self.stmtInfo = stmtInfo
-        self.set_expr(stmtInfo[1])
-        self.set_decl(stmtInfo[2])
-
 class ReturnStatement(Statement):
     def __init__(self, stmtInfo):
         super().__init__(stmtInfo)
@@ -58,11 +53,6 @@ class DoStatement(Statement):
     def set_body_expr(self, expr):
         self.body_expr = expr
 
-    def update_doStatement(self, stmtInfo):
-        self.stmtInfo = stmtInfo
-        self.set_cond_expr(stmtInfo[2])
-        self.set_body_expr(stmtInfo[3])
-
 class WhileStatement(Statement):
     def __init__(self, stmtInfo):
         super().__init__(stmtInfo)
@@ -74,11 +64,6 @@ class WhileStatement(Statement):
 
     def set_body_expr(self, expr):
         self.body_expr = expr
-
-    def update_whileStatement(self, stmtInfo):
-        self.stmtInfo = stmtInfo
-        self.set_cond_expr(stmtInfo[2])
-        self.set_body_expr(stmtInfo[3])
 
 class TryStatement(Statement):
     def __init__(self, stmtInfo):
@@ -92,11 +77,6 @@ class TryStatement(Statement):
     def set_pairs_expr(self, expr):
         self.pairs_expr = expr
 
-    def update_tryStatement(self, stmtInfo):
-        self.stmtInfo = stmtInfo
-        self.set_tryb_expr(stmtInfo[2])
-        self.set_pairs_expr(stmtInfo[3])
-
 class IfStatement(Statement):
     def __init__(self, stmtInfo):
         super().__init__(stmtInfo)
@@ -109,11 +89,6 @@ class IfStatement(Statement):
     def set_body_expr(self, expr):
         self.body_expr = expr
 
-    def update_ifStatement(self, stmtInfo):
-        self.stmtInfo = stmtInfo
-        self.set_cond_expr(stmtInfo[2])
-        self.set_body_expr(stmtInfo[3])
-
 class SwitchStatement(Statement):
     def __init__(self, stmtInfo):
         super().__init__(stmtInfo)
@@ -125,11 +100,6 @@ class SwitchStatement(Statement):
 
     def set_ksv_pairs(self, expr):
         self.pairs_expr = expr
-
-    def update_switchStatement(self, stmtInfo):
-        self.stmtInfo = stmtInfo
-        self.set_cond_expr(stmtInfo[2])
-        self.set_ksv_pairs(stmtInfo[3])
 
 # Block state is a special statement
 # TODO : What is block stat is?
