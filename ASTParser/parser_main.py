@@ -58,15 +58,28 @@ if __name__ == '__main__' :
             if m_ast is not None:
                 ap.load_ast(m_ast)
                 ap.parse_ast()
+                
+                for node in ap.parsedNodes:
+                    if 'Assignment' == node.nodeInfo.type:
+                        if '[\'Assignment\', [\'extended\', \'extended\'], \'extended\']' == str(node.nodeInfo):
+                            pass
+                        elif '[\'ReturnStatement\', None]' == str(node.nodeInfo):
+                            pass
+                        else:
+                            pprint(node.nodeInfo)
 
                 # for node in ap.parsedNodes:
-                    # pprint(node.nodeInfo)
+                #     if 'ArrayInitializer' == node.nodeInfo.type:
+                #         pprint(node.nodeInfo)
 
                 # for edge in ap.parsedEdges:
                     # pprint(edge)
 
             ag = ASTGraph(ap.parsedNodes, ap.parsedEdges, config)
             ag.graph_initialize()
+
+            # encode_flag makes the index of edges meaningful
+            # ag.graph_initialize(encode_flag = True)
 
             if ag.graph == None:
                 pass

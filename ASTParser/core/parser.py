@@ -68,7 +68,14 @@ actionList = [
         ]
 
 dataList = [
-        'CD'
+        'Keyword', # This case is for JumpStatement
+        'Dimension', # This case if for ArrayCreation, the dimension of array should be 1
+        'TypeName', # This case if for ArrayInitializer
+        'OP', # This case is for Assignment
+        'Class',
+        'Method',
+        'Register',
+        'Value'
         ]
 
 class ASTParser():
@@ -107,7 +114,7 @@ class ASTParser():
         elif errorType == 50:
             self.errMsg = 'ERR_NO(50): Wrong operand in ThrowStatement'
         elif errorType == 60:
-            self.errMsg = 'ERR_NO(60): Wrong operand in JumpStatement'
+            self.errMsg = 'ERR_NO(60): Wrong operand in JumpStatement (keyword is not break)'
         elif errorType == 70:
             self.errMsg = 'ERR_NO(70): Wrong operand in DoStatement(cond_expr)'
         elif errorType == 71:
@@ -143,7 +150,7 @@ class ASTParser():
         elif errorType == 1030:
             self.errMsg = 'ERR_NO(1030): Wrong operand in ArrayInitializer(params)'
         elif errorType == 1031:
-            self.errMsg = 'ERR_NO(1031): Wrong operand in ArrayInitializer(tn), tn is not None'
+            self.errMsg = 'ERR_NO(1031): Wrong operand in ArrayInitializer(tn), tn is a list'
         elif errorType == 1040:
             self.errMsg = 'ERR_NO(1040): Wrong operand in Assignment(lhs)'
         elif errorType == 1041:
@@ -236,8 +243,8 @@ class ASTParser():
                     return
 
                 for const_value in ast:
-                    cd = ConstData(str(const_value), 'CD')
-                    constNode = ASTNode(cd, constValueNodeIndex)
+                    cv = ConstData(str(const_value), 'Value')
+                    constNode = ASTNode(cv, constValueNodeIndex)
 
                     self.parsedNodes.append(constNode)
                     self.create_edges(pIndex, constValueNodeIndex, None)
@@ -254,8 +261,8 @@ class ASTParser():
 
                 constValueNodeIndex = len(self.parsedNodes)
 
-                cd = ConstData(str(const_value), 'CD')
-                constNode = ASTNode(cd, constValueNodeIndex)
+                cv = ConstData(str(const_value), 'Value')
+                constNode = ASTNode(cv, constValueNodeIndex)
 
                 self.parsedNodes.append(constNode)
                 self.create_edges(pIndex, constValueNodeIndex, None)
@@ -271,9 +278,8 @@ class ASTParser():
         if astBlock[0] == 'BlockStatement':
             stmt = copy_instance(astBlock)
 
-            # DP DEBUG ARB
             if len(astBlock[2]) == 0:
-                empty_list = ['EMPTY']
+                empty_list = ['EMPTY_LIST']
                 astBlock[2].append(empty_list)
 
             blockStmtNodeIndex = len(self.parsedNodes)
@@ -344,9 +350,8 @@ class ASTParser():
 
             # Branch for decl
             if type(astBlock[2]) == type(list()):
-                stmt[2] = 'extended'
-
                 if 'extended' in stmt.__repr__():
+                    stmt[2] = 'extended'
                     self.parsedNodes[localDeclStmtNodeIndex].nodeInfo.update_localDeclarationStatement(stmt)
                 else:
                     lds = LocalDeclarationStatement(stmt)
@@ -421,12 +426,23 @@ class ASTParser():
             js = JumpStatement(stmt)
             stmtNode = ASTNode(js, jmpStmtNodeIndex)
 
+            if astBlock[1] != 'break':
+                self.print_parsing_error(60)
+                return
+            else:
+                stmt[1] = 'extended'
+
+                keywordNodeIndex = len(self.parsedNodes)
+
+                kw = ConstData(str(astBlock[1]), 'Keyword')
+                constNode = ASTNode(kw, keywordNodeIndex)
+
+                self.parsedNodes.append(constNode)
+                self.create_edges(jmpStmtNodeIndex, keywordNodeIndex, None)
+
             self.parsedNodes.append(stmtNode)
             self.create_edges(pIndex, jmpStmtNodeIndex, None)
 
-            #TODO : Add a routine that prevent crash or wrong behaviors
-            # Blah Blah Blah Blah Blah Blah
-            # self.print_parsing_error(60)
 
         elif astBlock[0] == 'DoStatement':
             stmt = copy_instance(astBlock)
@@ -453,9 +469,8 @@ class ASTParser():
 
             # Branch for body_expr
             if type(astBlock[3]) == type(list()):
-                stmt[3] = 'extended'
-
                 if 'extended' in stmt.__repr__():
+                    stmt[3] = 'extended'
                     self.parsedNodes[doStmtNodeIndex].nodeInfo.update_doStatement(stmt)
                 else:
                     ds = DoStatement(stmt)
@@ -497,9 +512,8 @@ class ASTParser():
 
             # Branch for body_expr
             if type(astBlock[3]) == type(list()):
-                stmt[3] = 'extended'
-
                 if 'extended' in stmt.__repr__():
+                    stmt[3] = 'extended'
                     self.parsedNodes[whileStmtNodeIndex].nodeInfo.update_whileStatement(stmt)
                 else:
                     ws = WhileStatement(stmt)
@@ -542,10 +556,9 @@ class ASTParser():
 
             # Branch for pairs_expr
             if type(astBlock[3]) == type(list()):
-                stmt[3] = 'extended'
-
                 # Node Creation
                 if 'extended' in stmt.__repr__():
+                    stmt[3] = 'extended'
                     self.parsedNodes[tryStmtNodeIndex].nodeInfo.update_tryStatement(stmt)
                 else:
                     ts = TryStatement(stmt)
@@ -587,9 +600,8 @@ class ASTParser():
 
             # Branch for body_expr
             if type(astBlock[3]) == type(list()):
-                stmt[3] = 'extended'
-
                 if 'extended' in stmt.__repr__():
+                    stmt[3] = 'extended'
                     self.parsedNodes[ifStmtNodeIndex].nodeInfo.update_ifStatement(stmt)
                 else:
                     ifs = IfStatement(stmt)
@@ -632,9 +644,8 @@ class ASTParser():
             # Branch for ksv_pairs
             # CHECK : How to interpret the meaning of pairs
             if type(astBlock[3]) == type(list()):
-                stmt[3] = 'extended'
-
                 if 'extended' in stmt.__repr__():
+                    stmt[3] = 'extended'
                     self.parsedNodes[switchStmtNodeIndex].nodeInfo.update_switchStatement(stmt)
                 else:
                     ss = SwitchStatement(stmt)
@@ -683,9 +694,8 @@ class ASTParser():
 
             # Branch for ind
             if type(astBlock[1][1]) == type(list()):
-                action[1][1] = 'extended'
-
                 if 'extended' in action.__repr__():
+                    action[1][1] = 'extended'
                     self.parsedNodes[arrAccessNodeIndex].nodeInfo.update_arrayAccess(action)
                 else:
                     arrayAccessAction = ArrayAccess(action)
@@ -694,11 +704,11 @@ class ASTParser():
                     self.parsedNodes.append(actionNode)
                     self.create_edges(pIndex, arrAccessNodeIndex, None)
 
-                    if type(astBlock[1][1][0]) == type(list()):
-                        for subTree in astBlock[1][1]:
-                           self.visit_tree(subTree, arrAccessNodeIndex)
-                    else :
-                        self.visit_tree(astBlock[1][1], arrAccessNodeIndex)
+                if type(astBlock[1][1][0]) == type(list()):
+                    for subTree in astBlock[1][1]:
+                        self.visit_tree(subTree, arrAccessNodeIndex)
+                else :
+                    self.visit_tree(astBlock[1][1], arrAccessNodeIndex)
             else:
                 self.print_parsing_error(1011)
 
@@ -727,9 +737,8 @@ class ASTParser():
 
             # Branch for dim
             if type(astBlock[2]) == type(list()):
-                action[2] = 'extended'
-
                 if 'extended' in action.__repr__():
+                    action[2] = 'extended'
                     self.parsedNodes[arrCreationNodeIndex].nodeInfo.update_arrayCreation(action)
                 else:
                     arrayCreationAction = ArrayCreation(action)
@@ -738,14 +747,22 @@ class ASTParser():
                     self.parsedNodes.append(actionNode)
                     self.create_edges(pIndex, arrCreationNodeIndex, None)
 
-                    if type(astBlock[2][0]) == type(list()):
-                        for subTree in astBlock[2]:
-                            self.visit_tree(subTree, arrCreationNodeIndex)
-                    else :
-                        self.visit_tree(astBlock[2], arrCreationNodeIndex)
+                if type(astBlock[2][0]) == type(list()):
+                    for subTree in astBlock[2]:
+                        self.visit_tree(subTree, arrCreationNodeIndex)
+                else :
+                    self.visit_tree(astBlock[2], arrCreationNodeIndex)
             else:
                 # In this case, dim is just a const value like 1
-                pass
+                action[2] = 'extended'
+
+                dimensionNodeIndex = len(self.parsedNodes)
+
+                dim = ConstData(str(astBlock[2]), 'Dimension')
+                constNode = ASTNode(dim, dimensionNodeIndex)
+
+                self.parsedNodes.append(constNode)
+                self.create_edges(arrCreationNodeIndex, dimensionNodeIndex, None)
 
         elif astBlock[0] == 'ArrayInitializer':
             action = copy_instance(astBlock)
@@ -771,10 +788,31 @@ class ASTParser():
                 self.print_parsing_error(1030)
 
             # Branch for tn
-            if astBlock[2] is not None:
+            if type(astBlock[2]) == type(list()):
                 self.print_parsing_error(1031)
+            else:
+                if 'extended' in action.__repr__():
+                    action[2] = 'extended'
+                    self.parsedNodes[arrInitializerNodeIndex].nodeInfo.update_arrayInitializer(action)
+                else:
+                    arrayInitializerAction = ArrayInitializer(action)
+                    actionNode = ASTNode(arrayInitializerAction, arrInitializerNodeIndex)
 
-            # TODO : Add a routine for handling action[2], 'tn' field
+                    self.parsedNodes.append(actionNode)
+                    self.create_edges(pIndex, arrInitializerNodeIndex, None)
+
+                if astBlock[2] is not None:
+                    tnNodeIndex = len(self.parsedNodes)
+
+                    tn = ConstData(str(astBlock[2]), 'TypeName')
+
+                    constNode = ASTNode(tn, tnNodeIndex)
+
+                    self.parsedNodes.append(constNode)
+                    self.create_edges(arrayInitializerAction, tnNodeIndex, None)
+                else:
+                    # This case 'tn' is None, so we do not make any node and edges for it
+                    pass
 
         elif astBlock[0] == 'Assignment':
             action = copy_instance(astBlock)
@@ -801,9 +839,8 @@ class ASTParser():
 
             # Branch for rhs
             if type(astBlock[1][1]) == type(list()):
-                action[1][1] = 'extended'
-
                 if 'extended' in action.__repr__():
+                    action[1][1] = 'extended'
                     self.parsedNodes[assignNodeIndex].nodeInfo.update_assignment(action)
                 else:
                     assignAction = Assignment(action)
@@ -812,17 +849,31 @@ class ASTParser():
                     self.parsedNodes.append(actionNode)
                     self.create_edges(pIndex, assignNodeIndex, None)
 
-                    if type(astBlock[1][1][0]) == type(list()):
-                        for subTree in astBlock[1][1]:
-                           self.visit_tree(subTree, assignNodeIndex)
-                    else :
-                        self.visit_tree(astBlock[1][1], assignNodeIndex)
+                if type(astBlock[1][1][0]) == type(list()):
+                    for subTree in astBlock[1][1]:
+                        self.visit_tree(subTree, assignNodeIndex)
+                else :
+                    self.visit_tree(astBlock[1][1], assignNodeIndex)
             else:
                 self.print_parsing_error(1041)
 
             # Branch for op
             if type(astBlock[2]) == type(list()):
                 self.print_parsing_error(1042)
+            else:
+                action[2] = 'extended'
+
+                opNodeIndex = len(self.parsedNodes)
+
+                if astBlock[2] == '':
+                    op = ConstData('NOP', 'OP')
+                else:
+                    op = ConstData(str(astBlock[2]), 'OP')
+
+                constNode = ASTNode(op, opNodeIndex)
+
+                self.parsedNodes.append(constNode)
+                self.create_edges(assignNodeIndex, opNodeIndex, None)
 
         elif astBlock[0] == 'BinaryInfix':
             action = copy_instance(astBlock)
@@ -849,9 +900,8 @@ class ASTParser():
 
             # Branch for right
             if type(astBlock[1][1]) == type(list()):
-                action[1][1] = 'extended'
-
                 if 'extended' in action.__repr__():
+                    action[1][1] = 'extended'
                     self.parsedNodes[binInfixNodeIndex].nodeInfo.update_binaryInfix(action)
                 else:
                     binaryInfixAction = BinaryInfix(action)
@@ -860,12 +910,11 @@ class ASTParser():
                     self.parsedNodes.append(actionNode)
                     self.create_edges(pIndex, binInfixNodeIndex, None)
 
-
-                    if type(astBlock[1][1][0]) == type(list()):
-                        for subTree in astBlock[1][1]:
-                           self.visit_tree(subTree, binInfixNodeIndex)
-                    else :
-                        self.visit_tree(astBlock[1][1], binInfixNodeIndex)
+                if type(astBlock[1][1][0]) == type(list()):
+                    for subTree in astBlock[1][1]:
+                        self.visit_tree(subTree, binInfixNodeIndex)
+                else :
+                    self.visit_tree(astBlock[1][1], binInfixNodeIndex)
             else:
                 self.print_parsing_error(1051)
 
@@ -898,9 +947,8 @@ class ASTParser():
 
             # Branch for arg
             if type(astBlock[1][1]) == type(list()):
-                action[1][1] = 'extended'
-
                 if 'extended' in action.__repr__():
+                    action[1][1] = 'extended'
                     self.parsedNodes[castNodeIndex].nodeInfo.update_cast(action)
                 else:
                     castAction = Cast(action)
@@ -909,11 +957,11 @@ class ASTParser():
                     self.parsedNodes.append(actionNode)
                     self.create_edges(pIndex, castNodeIndex, None)
 
-                    if type(astBlock[1][1][0]) == type(list()):
-                        for subTree in astBlock[1][1]:
-                           self.visit_tree(subTree, castNodeIndex)
-                    else :
-                        self.visit_tree(astBlock[1][1], castNodeIndex)
+                if type(astBlock[1][1][0]) == type(list()):
+                    for subTree in astBlock[1][1]:
+                        self.visit_tree(subTree, castNodeIndex)
+                else :
+                    self.visit_tree(astBlock[1][1], castNodeIndex)
             else:
                 self.print_parsing_error(1061)
 
@@ -1157,9 +1205,8 @@ class ASTParser():
 
             # Branch for parse_descriptor
             if type(astBlock[3]) == type(list()):
-                action[3] = 'extended'
-
                 if 'extended' in action.__repr__():
+                    action[3] = 'extended'
                     self.parsedNodes[clsInstanceCreationNodeIndex].nodeInfo.update_classInstanceCreation(action)
                 else:
                     classInstanceCreationAction = ClassInstanceCreation(action)
@@ -1168,11 +1215,11 @@ class ASTParser():
                     self.parsedNodes.append(actionNode)
                     self.create_edges(pIndex, clsInstanceCreationNodeIndex, None)
 
-                    if type(astBlock[3][0]) == type(list()):
-                        for subTree in astBlock[3]:
-                           self.visit_tree(subTree, clsInstanceCreationNodeIndex)
-                    else :
-                        self.visit_tree(astBlock[3], clsInstanceCreationNodeIndex)
+                if type(astBlock[3][0]) == type(list()):
+                    for subTree in astBlock[3]:
+                        self.visit_tree(subTree, clsInstanceCreationNodeIndex)
+                else :
+                    self.visit_tree(astBlock[3], clsInstanceCreationNodeIndex)
             else:
                 self.print_parsing_error(1151)
 
@@ -1232,8 +1279,11 @@ class ConstData():
         self.type = const_type
         self.value = value
 
-    def __repr__():
-        return self.value
+    def __repr__(self):
+        return (
+            'type: ' + str(self.type)
+            + ' / value:' + str(self.value)
+            )
 
 # Class for managing the edge information among the parsedNodes of AST
 class ASTEdge():

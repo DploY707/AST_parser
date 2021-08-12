@@ -48,6 +48,17 @@ class ArrayInitializer(Action):
         # TODO : handle this case
         self.tn = actionInfo[2]
 
+    def set_params(self, params):
+        self.params = params
+
+    def set_tn(self, tn):
+        self.tn = tn
+
+    def update_arrayInitializer(self, actionInfo):
+        self.actionInfo = actionInfo
+        self.set_params(actionInfo[1])
+        self.set_tn(actionInfo[2])
+
 class Assignment(Action):
     def __init__(self, actionInfo):
         super().__init__(actionInfo)
