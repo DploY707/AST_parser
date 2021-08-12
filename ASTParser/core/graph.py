@@ -25,8 +25,8 @@ class ASTGraph():
 		self.graph = nx.Graph()
 
 		if not encode_flag:
-			for node in self.nodeList:
-				self.graph.add_node(node)
+			# for node in self.nodeList:
+			# 	self.graph.add_node(node)
 
 			for edge in self.edgeList:
 				if edge.pIndex == -1:
