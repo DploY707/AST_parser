@@ -11,14 +11,14 @@ from core.parser import actionList
 from core.parser import dataList
 
 class ASTGraph():
-	def __init__(self, nodeList, edgeList, config):
+	def __init__(self, nodeList, edgeList, config = None):
 		self.nodeList = nodeList
 		self.edgeList = edgeList
 		self.graph = None
 		self.config = config
 
 	def graph_initialize(self, encode_flag = False):
-		if self.config.MAX_NODE_COUNT < len(self.nodeList):
+		if encode_flag and self.config.MAX_NODE_COUNT < len(self.nodeList):
 			print(set_string_colored('Increase the graph configuration for MAX_NODE_COUNT', Color.RED.value))
 			return
 

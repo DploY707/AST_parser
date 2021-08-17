@@ -30,7 +30,7 @@ resultPath = '/root/result/'
 
 targetExts = ['.apk', '.jar']
 
-config = GraphConfig(10000,20000)
+# config = GraphConfig(10000,20000)
 
 def create_ast(method):
     if method.is_external():
@@ -70,7 +70,8 @@ if __name__ == '__main__' :
                 # for edge in ap.parsedEdges:
                     # pprint(edge)
 
-            ag = ASTGraph(ap.parsedNodes, ap.parsedEdges, config)
+            # ag = ASTGraph(ap.parsedNodes, ap.parsedEdges, config)
+            ag = ASTGraph(ap.parsedNodes, ap.parsedEdges)
             ag.graph_initialize()
 
             # encode_flag makes the index of edges meaningful

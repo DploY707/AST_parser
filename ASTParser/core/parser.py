@@ -177,6 +177,8 @@ class ASTParser():
             self.errMsg = 'ERR_NO(1080): Wrong operand in Literal(tt), tt is not tuple with length == 2'
         elif errorType == 1090:
             self.errMsg = 'ERR_NO(1090): Wrong operand in Local(name), name is None or list() data'
+        elif errorType == 1091:
+            self.errMsg = 'ERR_NO(1091): Wrong operand in Local(name), name is un-handled foramt'
         elif errorType == 1100:
             self.errMsg = 'ERR_NO(1100): Wrong operand in MethodInvocation(params)'
         elif errorType == 1101:
@@ -972,9 +974,11 @@ class ASTParser():
                     regStr = 'variable'
                 elif astBlock[1].startswith('p'):
                     regStr = 'pointer'
+                elif astBlock[1].startswith('_'):
+                    regStr = '_'
                 else:
                     print(astBlock[1])
-                    self.print_parsing_error(1090)
+                    self.print_parsing_error(1091)
                     return
 
                 action[1] = 'extended'
