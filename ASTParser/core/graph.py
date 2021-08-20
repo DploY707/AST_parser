@@ -29,6 +29,8 @@ class ASTGraph():
             return
 
         self.graph = nx.DiGraph()
+
+        FrameFlag = False
         
         # #with open('/root/workDir/ASTParser/core/frame_cls.txt','r') as f:
         # with open('../../AST_parser/ASTParser/core/frame_cls.txt','r') as f:
@@ -81,26 +83,31 @@ class ASTGraph():
                             if  self.nodeList[edge.pIndex].nodeInfo.type == 'ClassInstanceCreation':
                                 for frame in frameFilter:
                                     if triple.startswith(frame):
-                                        self.graph.add_edge(
-                                            str(edge.pIndex) + ':' + self.nodeList[edge.pIndex].nodeInfo.type
-                                            , str(edge.cIndex) + ': '+ 'Framework_API')
-                                    
-                                else:
+                                        FrameFlag = True
+                                        
+                                if FrameFlag:
                                     self.graph.add_edge(
                                         str(edge.pIndex) + ':' + self.nodeList[edge.pIndex].nodeInfo.type
                                         , str(edge.cIndex) + ':' + str(self.nodeList[edge.cIndex].nodeInfo.value[1]))
+                                else:
+                                    self.graph.add_edge(
+                                        str(edge.pIndex) + ':' + self.nodeList[edge.pIndex].nodeInfo.type
+                                        , str(edge.cIndex) + ': '+ 'USER_DEFINE_API')
+
                                 
                             elif self.nodeList[edge.pIndex].nodeInfo.type == 'MethodInvocation':
                                 for frame in frameFilter:
                                     if triple.startswith(frame):
-                                        self.graph.add_edge(
-                                            str(edge.pIndex) + ':' + self.nodeList[edge.pIndex].nodeInfo.type
-                                            , str(edge.cIndex) + ': '+ 'Framework_API')                    
-           
-                                else:
+                                        FrameFlag = True
+                                        
+                                if FrameFlag:
                                     self.graph.add_edge(
                                         str(edge.pIndex) + ':' + self.nodeList[edge.pIndex].nodeInfo.type
                                         , str(edge.cIndex) + ':' + str(self.nodeList[edge.cIndex].nodeInfo.value[1]))
+                                else:
+                                    self.graph.add_edge(
+                                        str(edge.pIndex) + ':' + self.nodeList[edge.pIndex].nodeInfo.type
+                                        , str(edge.cIndex) + ': '+ 'USER_DEFINE_API')
                      
                                 param_type = str(self.nodeList[edge.cIndex].nodeInfo.value[-1]).split(')')[0]
                                 param_type = param_type.replace('(','')
@@ -124,34 +131,33 @@ class ASTGraph():
                             elif self.nodeList[edge.pIndex].nodeInfo.type == 'FieldAccess':
                                 for frame in frameFilter:
                                     if triple.startswith(frame):
-                                        self.graph.add_edge(
-                                            str(edge.pIndex) + ':' + self.nodeList[edge.pIndex].nodeInfo.type
-                                            , str(edge.cIndex) + ': '+ 'Framework_API')
-
-                                else:
-                                    #api = str(self.nodeList[edge.cIndex].nodeInfo.value[1])+str(self.nodeList[edge.cIndex].nodeInfo.value[-1])
-                                    if '(' in str(self.nodeList[edge.cIndex].nodeInfo.value[-1]):
-                                        api = str(self.nodeList[edge.cIndex].nodeInfo.value[0])+'/'+str(self.nodeList[edge.cIndex].nodeInfo.value[1])+str(self.nodeList[edge.cIndex].nodeInfo.value[-1])
-                                    else:
-                                        api = str(self.nodeList[edge.cIndex].nodeInfo.value[0])+'/'+str(self.nodeList[edge.cIndex].nodeInfo.value[1])+':'+str(self.nodeList[edge.cIndex].nodeInfo.value[-1])
-
+                                        FrameFlag = True
+                                        
+                                if FrameFlag:
                                     self.graph.add_edge(
                                         str(edge.pIndex) + ':' + self.nodeList[edge.pIndex].nodeInfo.type
-                                        , str(edge.cIndex) + ':' + api)
+                                        , str(edge.cIndex) + ':' + str(self.nodeList[edge.cIndex].nodeInfo.value[1]))
+                                else:
+                                    self.graph.add_edge(
+                                        str(edge.pIndex) + ':' + self.nodeList[edge.pIndex].nodeInfo.type
+                                        , str(edge.cIndex) + ': '+ 'USER_DEFINE_API')
                                 
                         elif self.nodeList[edge.pIndex].nodeInfo.type == 'FieldAccess' and self.nodeList[edge.cIndex].nodeInfo.type == 'TypeName':
                             type_name = str(self.nodeList[edge.cIndex].nodeInfo.value)
                             # print(type_name)
                             
                             for frame in frameFilter:
-                                    if type_name.startswith(frame):
-                                        self.graph.add_edge(
-                                            str(edge.pIndex) + ':' + self.nodeList[edge.pIndex].nodeInfo.type
-                                            , str(edge.cIndex) + ': '+ 'Framework_API')
+                                if triple.startswith(frame):
+                                    FrameFlag = True
+                                        
+                            if FrameFlag:
+                                self.graph.add_edge(
+                                    str(edge.pIndex) + ':' + self.nodeList[edge.pIndex].nodeInfo.type
+                                    , str(edge.cIndex) + ':' + str(self.nodeList[edge.cIndex].nodeInfo.value[1]))
                             else:
                                 self.graph.add_edge(
                                     str(edge.pIndex) + ':' + self.nodeList[edge.pIndex].nodeInfo.type
-                                    , str(edge.cIndex) + ': '+ str(self.nodeList[edge.cIndex].nodeInfo.value))
+                                    , str(edge.cIndex) + ': '+ 'USER_DEFINE_API')
                             
                         elif self.nodeList[edge.pIndex].nodeInfo.type == 'MethodInvocation' and self.nodeList[edge.cIndex].nodeInfo.type == 'APIName':
                             pass
