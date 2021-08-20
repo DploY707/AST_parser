@@ -142,12 +142,12 @@ class ASTGraph():
                                         str(edge.pIndex) + ':' + self.nodeList[edge.pIndex].nodeInfo.type
                                         , str(edge.cIndex) + ': '+ 'USER_DEFINE_API')
                                 
-                        elif self.nodeList[edge.pIndex].nodeInfo.type == 'FieldAccess' and self.nodeList[edge.cIndex].nodeInfo.type == 'TypeName':
+                        elif self.nodeList[edge.cIndex].nodeInfo.type == 'TypeName' and self.nodeList[edge.pIndex].nodeInfo.type == 'FieldAccess':
                             type_name = str(self.nodeList[edge.cIndex].nodeInfo.value)
                             # print(type_name)
                             
                             for frame in frameFilter:
-                                if triple.startswith(frame):
+                                if type_name.startswith(frame):
                                     FrameFlag = True
                                         
                             if FrameFlag:
@@ -157,7 +157,7 @@ class ASTGraph():
                             else:
                                 self.graph.add_edge(
                                     str(edge.pIndex) + ':' + self.nodeList[edge.pIndex].nodeInfo.type
-                                    , str(edge.cIndex) + ': '+ 'USER_DEFINE_API')
+                                    , str(edge.cIndex) + ': '+ 'USER_DEFINE_TYPE')
                             
                         elif self.nodeList[edge.pIndex].nodeInfo.type == 'MethodInvocation' and self.nodeList[edge.cIndex].nodeInfo.type == 'APIName':
                             pass
