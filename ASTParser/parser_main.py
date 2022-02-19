@@ -72,7 +72,7 @@ if __name__ == '__main__' :
 
             # ag = ASTGraph(ap.parsedNodes, ap.parsedEdges, config)
             ag = ASTGraph(ap.parsedNodes, ap.parsedEdges)
-            ag.graph_initialize()
+            ag.graph_initialize(str(method.name))
 
             # encode_flag makes the index of edges meaningful
             # ag.graph_initialize(encode_flag = True)
